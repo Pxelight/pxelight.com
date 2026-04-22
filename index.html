@@ -184,6 +184,92 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* ── MOBİL NAVİGASYON ── */
+.mobile-nav{display:none}
+
+/* ── TABLET (≤1024px) ── */
+@media(max-width:1024px){
+  .workspace{grid-template-columns:1fr 200px 240px}
+  .ticker-stats .tstat:nth-child(3),.ticker-stats .tstat:nth-child(4){display:none}
+}
+
+/* ── MOBİL (≤768px) ── */
+@media(max-width:768px){
+  body{overflow:hidden;height:100dvh}
+
+  /* Header küçültme */
+  header{height:44px;padding:0 12px}
+  .logo{font-size:14px}
+  .logo-sub{font-size:11px}
+  .conn-label{display:none}
+
+  /* Workspace tek sütun — sekmeli panel */
+  .workspace{
+    display:flex;flex-direction:column;
+    position:relative;flex:1;overflow:hidden
+  }
+
+  /* Tüm kolonları gizle, JS gösterecek */
+  .main-col,.book-col,.trade-col{
+    display:none;flex-direction:column;flex:1;overflow:hidden;min-height:0;
+    border:none
+  }
+  .main-col.mob-active,.book-col.mob-active,.trade-col.mob-active{display:flex}
+
+  /* Trade col scroll */
+  .trade-col{overflow-y:auto}
+
+  /* Ticker kompakt */
+  .ticker{height:auto;padding:8px 10px;gap:10px;flex-wrap:wrap}
+  .pair-name{font-size:14px}
+  .price-live{font-size:16px;min-width:auto}
+  .ticker-stats{gap:12px;flex-wrap:wrap}
+  .tstat .lbl{font-size:9px}
+  .tstat .val{font-size:11px}
+
+  /* Chart yüksekliği */
+  .chart-wrap{flex:1;min-height:200px}
+
+  /* Bottom panel daha küçük */
+  .bottom-panel{height:180px}
+  .tab-btn{padding:8px 10px;font-size:10px}
+
+  /* Order book */
+  .book-col{background:var(--panel)}
+  .mid-row{font-size:14px;padding:7px 10px}
+
+  /* Mobile nav bar */
+  .mobile-nav{
+    display:flex;height:46px;background:var(--panel);border-top:1px solid var(--border);
+    flex-shrink:0;z-index:200
+  }
+  .mob-tab{
+    flex:1;background:none;border:none;color:var(--muted2);
+    font-family:var(--font-mono);font-size:10px;font-weight:600;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    cursor:pointer;border-top:2px solid transparent;transition:all .15s
+  }
+  .mob-tab .mob-icon{font-size:16px;line-height:1}
+  .mob-tab.active{color:var(--yellow);border-top-color:var(--yellow)}
+
+  /* Market dropdown mobilde tam genişlik */
+  .market-dropdown{width:calc(100vw - 24px);left:0}
+
+  /* Tablo sütunlarını gizle */
+  table th:nth-child(3),table td:nth-child(3),
+  table th:nth-child(4),table td:nth-child(4){display:none}
+
+  /* Toast alt nav üstünde */
+  .toast{bottom:60px;right:12px;left:12px;max-width:none;text-align:center}
+}
+
+/* ── ÇOK KÜÇÜK MOBİL (≤400px) ── */
+@media(max-width:400px){
+  .ticker{gap:6px;padding:6px 8px}
+  .ticker-stats .tstat:nth-child(n+3){display:none}
+  .price-live{font-size:14px}
+}
 </style>
 </head>
 <body>
@@ -211,7 +297,7 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
           <span class="pair-arrow">▾</span>
         </div>
         <div class="market-dropdown">
-          <div class="mdd-header">Piyasalar</div>
+          <div class="mdd-header">Piyasalar - 24S Değişim</div>
           <div class="mdd-list" id="mdd-list"></div>
         </div>
       </div>
@@ -404,6 +490,22 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
   </div>
 </div>
 
+<!-- MOBİL NAVİGASYON -->
+<nav class="mobile-nav">
+  <button class="mob-tab active" id="mobtab-chart" onclick="switchMobTab('chart',this)">
+    <span class="mob-icon">◱</span>
+    <span>Grafik</span>
+  </button>
+  <button class="mob-tab" id="mobtab-book" onclick="switchMobTab('book',this)">
+    <span class="mob-icon">☷</span>
+    <span>Emirler</span>
+  </button>
+  <button class="mob-tab" id="mobtab-trade" onclick="switchMobTab('trade',this)">
+    <span class="mob-icon">⇌</span>
+    <span>İşlem</span>
+  </button>
+</nav>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -554,7 +656,7 @@ function updateTicker(d) {
   const chgEl = document.getElementById('chg-24h');
   chgEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
   chgEl.style.color = chg >= 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT';
+  document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT ✎';
   if (orderType === 'Market') document.getElementById('price-inp').value = livePrice.toFixed(coinDecimals[coin]);
   // max size: walletBalance = size * (price/leverage + price*COMMISSION_RATE) => size = walletBalance / (price * (1/leverage + COMMISSION_RATE))
   const maxSize = (walletBalance / (livePrice * (1 / leverage + COMMISSION_RATE))).toFixed(coinDecimals[coin] + 2);
@@ -567,13 +669,27 @@ function fmt(v, dec = 2) {
 }
 
 // ── ORDER BOOK ─────────────────────────────────────────────────────────────────
+function calcBookRows() {
+  const bookCol = document.querySelector('.book-col');
+  if (!bookCol) return 12;
+  const colH = bookCol.clientHeight;
+  const titleH = bookCol.querySelector('.col-title')?.offsetHeight || 37;
+  const hdrH   = bookCol.querySelector('.book-hdr')?.offsetHeight  || 26;
+  const midH   = bookCol.querySelector('.mid-row')?.offsetHeight   || 40;
+  const rowH   = 22;
+  const usable = colH - titleH - hdrH - midH;
+  const rows = Math.max(6, Math.floor(usable / 2 / rowH));
+  return rows;
+}
+
 function renderOrderBook(price) {
   if (!price) return;
   const dec = coinDecimals[coin];
   const step = price < 1 ? 0.0001 : price < 10 ? 0.001 : price < 100 ? 0.01 : price < 1000 ? 0.1 : 1;
   let asksHtml = '', bidsHtml = '';
+  const rows = calcBookRows();
 
-  for (let i = 12; i >= 1; i--) {
+  for (let i = rows; i >= 1; i--) {
     const p = (price + i * step).toFixed(dec);
     const qty = (Math.random() * 2 + 0.1).toFixed(3);
     const total = (parseFloat(p) * parseFloat(qty)).toFixed(2);
@@ -582,7 +698,7 @@ function renderOrderBook(price) {
       <span>${fmt(parseFloat(p), dec)}</span><span class="qty-col">${qty}</span><span class="total-col">${fmt(parseFloat(total),2)}</span>
       <div class="bg-fill" style="width:${fill}%;background:var(--red)"></div></div>`;
   }
-  for (let i = 1; i <= 12; i++) {
+  for (let i = 1; i <= rows; i++) {
     const p = Math.max(0.0001, price - i * step).toFixed(dec);
     const qty = (Math.random() * 2 + 0.1).toFixed(3);
     const total = (parseFloat(p) * parseFloat(qty)).toFixed(2);
@@ -650,6 +766,10 @@ function changeCoin(c) {
   document.getElementById('margin-btn').textContent = marginMode;
   loadTVWidget(c);
   connectWS(c);
+  currentFundingRate = null;
+  fundingNextTime = null;
+  document.getElementById('funding-cd').textContent = '— / —';
+  fetchFundingRate(c);
   // If old coin had open positions, start a bg WS for it now
   const posSymbols = new Set(positions.map(p => p.symbol));
   posSymbols.forEach(sym => { if (sym !== c) ensureBgWS(sym); });
@@ -1208,18 +1328,51 @@ function toast(msg, type = 'success') {
 }
 
 // ── FUNDING COUNTDOWN ──────────────────────────────────────────────────────────
+let currentFundingRate = null;
+let fundingNextTime = null;
+
+async function fetchFundingRate(symbol) {
+  try {
+    const res = await fetch(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${symbol.toUpperCase()}USDT`);
+    if (!res.ok) return;
+    const d = await res.json();
+    const rate = parseFloat(d.lastFundingRate);
+    const nextTime = parseInt(d.nextFundingTime);
+    if (!isNaN(rate)) currentFundingRate = rate;
+    if (!isNaN(nextTime) && nextTime > 0) fundingNextTime = nextTime;
+  } catch {
+    // sessiz hata, mevcut değer korunur
+  }
+}
+
 function startFunding() {
+  fetchFundingRate(coin);
+  // Her coin değişiminde yeniden çek
+  setInterval(() => fetchFundingRate(coin), 30000); // 30 saniyede bir güncelle
+
   setInterval(() => {
-    const now = new Date();
-    const h = now.getUTCHours();
-    const nextH = Math.ceil((h + 0.0001) / 8) * 8;
-    const target = new Date(now);
-    target.setUTCHours(nextH, 0, 0, 0);
-    const diff = target - now;
-    const hh = Math.floor(diff / 3600000).toString().padStart(2, '0');
-    const mm = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-    const ss = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-    document.getElementById('funding-cd').textContent = `0.0100% / ${hh}:${mm}:${ss}`;
+    const now = Date.now();
+    const rate = currentFundingRate !== null
+      ? (currentFundingRate * 100).toFixed(4) + '%'
+      : '—';
+
+    let countdown = '—';
+    if (fundingNextTime) {
+      const diff = fundingNextTime - now;
+      if (diff > 0) {
+        const hh = Math.floor(diff / 3600000).toString().padStart(2, '0');
+        const mm = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+        const ss = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+        countdown = `${hh}:${mm}:${ss}`;
+      } else {
+        // Süre doldu, yeniden çek
+        fetchFundingRate(coin);
+      }
+    }
+
+    const el = document.getElementById('funding-cd');
+    el.textContent = `${rate} / ${countdown}`;
+
   }, 1000);
 }
 
@@ -1255,6 +1408,52 @@ document.addEventListener('DOMContentLoaded', () => {
   const commLabel = document.getElementById('comm-label');
   commLabel.addEventListener('mouseenter', () => document.getElementById('comm-tooltip').style.display = 'block');
   commLabel.addEventListener('mouseleave', () => document.getElementById('comm-tooltip').style.display = 'none');
+
+  // ── MOBİL SEKME SİSTEMİ ──────────────────────────────────────────────────────
+  function isMobile() { return window.innerWidth <= 768; }
+
+  function switchMobTab(tab, btn) {
+    if (!isMobile()) return;
+    document.querySelectorAll('.mob-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector('.main-col').classList.remove('mob-active');
+    document.querySelector('.book-col').classList.remove('mob-active');
+    document.querySelector('.trade-col').classList.remove('mob-active');
+    if (tab === 'chart')  document.querySelector('.main-col').classList.add('mob-active');
+    if (tab === 'book')   document.querySelector('.book-col').classList.add('mob-active');
+    if (tab === 'trade')  document.querySelector('.trade-col').classList.add('mob-active');
+    // Emir defteri aktifse order book yenile
+    if (tab === 'book' && livePrice) { setTimeout(() => renderOrderBook(livePrice), 50); }
+  }
+  window.switchMobTab = switchMobTab;
+
+  function applyMobLayout() {
+    if (isMobile()) {
+      // Hiçbiri aktif değilse chart'ı aç
+      const hasActive = document.querySelector('.main-col.mob-active, .book-col.mob-active, .trade-col.mob-active');
+      if (!hasActive) {
+        document.querySelector('.main-col').classList.add('mob-active');
+        document.getElementById('mobtab-chart').classList.add('active');
+      }
+    } else {
+      // Desktop: tüm mob-active sınıflarını kaldır
+      document.querySelector('.main-col').classList.remove('mob-active');
+      document.querySelector('.book-col').classList.remove('mob-active');
+      document.querySelector('.trade-col').classList.remove('mob-active');
+    }
+  }
+
+  applyMobLayout();
+  window.addEventListener('resize', () => {
+    applyMobLayout();
+    if (livePrice) renderOrderBook(livePrice);
+  });
+
+  // Emir defteri boyutu değişince satır sayısını güncelle
+  const bookColEl = document.querySelector('.book-col');
+  if (bookColEl && window.ResizeObserver) {
+    new ResizeObserver(() => { if (livePrice) renderOrderBook(livePrice); }).observe(bookColEl);
+  }
 });
 </script>
 </body>
