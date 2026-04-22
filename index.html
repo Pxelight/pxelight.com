@@ -8,7 +8,12 @@
 <!-- PWA MANIFEST (inline) -->
 <script>
 (function(){
-  const icon = "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%230d0f12'/><g transform='translate(256,256)'><polygon points='0,-110 95,-55 95,55 0,110 -95,55 -95,-55' fill='none' stroke='%23f0b90b' stroke-width='22'/><polygon points='0,-62 54,-31 54,31 0,62 -54,31 -54,-31' fill='%23f0b90b' opacity='.25'/><line x1='0' y1='-110' x2='0' y2='-62' stroke='%23f0b90b' stroke-width='14'/><line x1='0' y1='62' x2='0' y2='110' stroke='%23f0b90b' stroke-width='14'/><line x1='95' y1='-55' x2='54' y2='-31' stroke='%23f0b90b' stroke-width='14'/><line x1='-54' y1='-31' x2='-95' y2='-55' stroke='%23f0b90b' stroke-width='14'/><line x1='95' y1='55' x2='54' y2='31' stroke='%23f0b90b' stroke-width='14'/><line x1='-54' y1='31' x2='-95' y2='55' stroke='%23f0b90b' stroke-width='14'/></g></svg>`);
+  // 1. SVG Kodunu temiz formatta (gerçek # işareti ile) yazıyoruz
+  const rawSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='#0d0f12'/><g transform='translate(256,256)'><polygon points='0,-110 95,-55 95,55 0,110 -95,55 -95,-55' fill='none' stroke='#f0b90b' stroke-width='22'/><polygon points='0,-62 54,-31 54,31 0,62 -54,31 -54,-31' fill='#f0b90b' opacity='.25'/><line x1='0' y1='-110' x2='0' y2='-62' stroke='#f0b90b' stroke-width='14'/><line x1='0' y1='62' x2='0' y2='110' stroke='#f0b90b' stroke-width='14'/><line x1='95' y1='-55' x2='54' y2='-31' stroke='#f0b90b' stroke-width='14'/><line x1='-54' y1='-31' x2='-95' y2='-55' stroke='#f0b90b' stroke-width='14'/><line x1='95' y1='55' x2='54' y2='31' stroke='#f0b90b' stroke-width='14'/><line x1='-54' y1='31' x2='-95' y2='55' stroke='#f0b90b' stroke-width='14'/></g></svg>`;
+
+  // 2. Android ve Web App Manifest için encode edilmiş SVG Data URL
+  const svgUrl = "data:image/svg+xml," + encodeURIComponent(rawSvg);
+
   const manifest = {
     name: "Pxelight Futures",
     short_name: "Pxelight",
@@ -17,17 +22,38 @@
     theme_color: "#0d0f12",
     start_url: ".",
     icons: [
-      { src: icon, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+      { src: svgUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
     ]
   };
+  
   const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
-  const url = URL.createObjectURL(blob);
+  const manifestUrl = URL.createObjectURL(blob);
   const link = document.createElement('link');
   link.rel = 'manifest';
-  link.href = url;
+  link.href = manifestUrl;
   document.head.appendChild(link);
+
+  // 3. iOS (Apple) Cihazlar için SVG'yi anlık (dinamik) olarak PNG'ye çevirme
+  // Apple cihazlar ana ekranda SVG desteklemez, bu kod SVG'yi Canvas'ta çizip PNG yapar.
+  const img = new Image();
+  img.onload = () => {
+     const canvas = document.createElement('canvas');
+     canvas.width = 512;
+     canvas.height = 512;
+     canvas.getContext('2d').drawImage(img, 0, 0);
+     const pngUrl = canvas.toDataURL('image/png');
+     
+     let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+     if(appleIcon) {
+         appleIcon.href = pngUrl;
+     }
+  };
+  img.src = svgUrl;
 })();
 </script>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230d0f12'/%3E%3Cg transform='translate(256,256)'%3E%3Cpolygon points='0,-110 95,-55 95,55 0,110 -95,55 -95,-55' fill='none' stroke='%23f0b90b' stroke-width='22'/%3E%3Cpolygon points='0,-62 54,-31 54,31 0,62 -54,31 -54,-31' fill='%23f0b90b' opacity='.25'/%3E%3Cline x1='0' y1='-110' x2='0' y2='-62' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='0' y1='62' x2='0' y2='110' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='-55' x2='54' y2='-31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='-31' x2='-95' y2='-55' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='55' x2='54' y2='31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='31' x2='-95' y2='55' stroke='%23f0b90b' stroke-width='14'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230d0f12'/%3E%3Cg transform='translate(256,256)'%3E%3Cpolygon points='0,-110 95,-55 95,55 0,110 -95,55 -95,-55' fill='none' stroke='%23f0b90b' stroke-width='22'/%3E%3Cpolygon points='0,-62 54,-31 54,31 0,62 -54,31 -54,-31' fill='%23f0b90b' opacity='.25'/%3E%3Cline x1='0' y1='-110' x2='0' y2='-62' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='0' y1='62' x2='0' y2='110' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='-55' x2='54' y2='-31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='-31' x2='-95' y2='-55' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='55' x2='54' y2='31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='31' x2='-95' y2='55' stroke='%23f0b90b' stroke-width='14'/%3E%3C/g%3E%3C/svg%3E">
 <!-- ICONS -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230d0f12'/%3E%3Cg transform='translate(256,256)'%3E%3Cpolygon points='0,-110 95,-55 95,55 0,110 -95,55 -95,-55' fill='none' stroke='%23f0b90b' stroke-width='22'/%3E%3Cpolygon points='0,-62 54,-31 54,31 0,62 -54,31 -54,-31' fill='%23f0b90b' opacity='.25'/%3E%3Cline x1='0' y1='-110' x2='0' y2='-62' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='0' y1='62' x2='0' y2='110' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='-55' x2='54' y2='-31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='-31' x2='-95' y2='-55' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='55' x2='54' y2='31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='31' x2='-95' y2='55' stroke='%23f0b90b' stroke-width='14'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230d0f12'/%3E%3Cg transform='translate(256,256)'%3E%3Cpolygon points='0,-110 95,-55 95,55 0,110 -95,55 -95,-55' fill='none' stroke='%23f0b90b' stroke-width='22'/%3E%3Cpolygon points='0,-62 54,-31 54,31 0,62 -54,31 -54,-31' fill='%23f0b90b' opacity='.25'/%3E%3Cline x1='0' y1='-110' x2='0' y2='-62' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='0' y1='62' x2='0' y2='110' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='-55' x2='54' y2='-31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='-31' x2='-95' y2='-55' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='55' x2='54' y2='31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='31' x2='-95' y2='55' stroke='%23f0b90b' stroke-width='14'/%3E%3C/g%3E%3C/svg%3E">
