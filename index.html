@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pxelight Futures</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+<!-- ICON -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%23f0b90b'>₿</text></svg>">
+<style>
+:root {
+  --bg: #0d0f12;
+  --panel: #13161b;
+  --panel2: #191d24;
+  --border: #252a33;
+  --border2: #2e3441;
+  --text: #e2e6ed;
+  --muted: #5a6375;
+  --muted2: #8892a4;
+  --yellow: #f0b90b;
+  --green: #0ecb81;
+  --red: #f6465d;
+  --orange: #ff9a00;
+  --blue: #1677ff;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Syne', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;outline:none}
+body{background:var(--bg);color:var(--text);font-family:var(--font-mono);font-size:12px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+
+/* HEADER */
+header{height:52px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 18px;flex-shrink:0;z-index:100}
+.logo{font-family:var(--font-display);font-size:17px;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:6px}
+.logo-main{color:var(--yellow)}
+.logo-sub{color:var(--muted2);font-weight:500;font-size:13px}
+.header-right{display:flex;align-items:center;gap:16px}
+.conn-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0}
+.conn-label{color:var(--muted2);font-size:11px}
+.header-balance{font-size:13px;font-weight:600;color:var(--text)}
+.header-balance span{color:var(--muted2);font-weight:400;font-size:11px;margin-right:4px}
+
+/* LAYOUT */
+.workspace{display:grid;grid-template-columns:1fr 240px 280px;flex:1;overflow:hidden;min-height:0}
+
+/* LEFT MAIN */
+.main-col{display:flex;flex-direction:column;border-right:1px solid var(--border);min-height:0}
+
+/* TICKER */
+.ticker{height:54px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:28px;flex-shrink:0;position:relative;z-index:50}
+.pair-wrap{position:relative;cursor:pointer}
+.pair-name{font-family:var(--font-display);font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
+.pair-name .sym{color:var(--yellow)}
+.pair-name .sep{color:var(--muted)}
+.perp-badge{background:rgba(240,185,11,.12);color:var(--yellow);font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;letter-spacing:.5px}
+.pair-arrow{color:var(--muted);font-size:10px;margin-left:3px}
+.market-dropdown{display:none;position:absolute;top:46px;left:0;width:260px;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.7);z-index:9999;overflow:hidden}
+.market-dropdown.open{display:block}
+.mdd-header{padding:10px 12px;font-size:11px;color:var(--muted2);border-bottom:1px solid var(--border);font-family:var(--font-display);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.mdd-list{max-height:300px;overflow-y:auto}
+.mdd-item{padding:9px 12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s}
+.mdd-item:hover{background:rgba(255,255,255,.04)}
+.mdd-item .coin{font-weight:600;font-size:12px}
+.mdd-item .usdt{color:var(--muted2);font-size:11px}
+.mdd-item .chg{font-size:11px}
+.price-live{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--green);min-width:130px;transition:color .3s}
+.price-live.down{color:var(--red)}
+.ticker-stats{display:flex;gap:24px;flex:1}
+.tstat{display:flex;flex-direction:column;gap:2px}
+.tstat .lbl{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.3px}
+.tstat .val{font-size:12px;font-weight:500}
+.funding-val{color:var(--yellow)}
+
+/* CHART */
+.chart-wrap{flex:1;position:relative;min-height:0}
+#tv-widget{position:absolute;inset:0}
+
+/* BOTTOM PANEL */
+.bottom-panel{height:220px;border-top:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.tab-bar{display:flex;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0}
+.tab-btn{background:none;border:none;color:var(--muted2);padding:10px 16px;cursor:pointer;font-family:var(--font-mono);font-size:11px;font-weight:500;border-bottom:2px solid transparent;transition:all .15s}
+.tab-btn.active{color:var(--yellow);border-bottom-color:var(--yellow)}
+.tab-content{flex:1;overflow-y:auto;display:none}
+.tab-content.active{display:block}
+table{width:100%;border-collapse:collapse}
+th{color:var(--muted);font-size:10px;font-weight:500;text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--panel2);text-transform:uppercase;letter-spacing:.3px}
+td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:middle;font-size:11px}
+.sym-cell{display:flex;align-items:center;gap:8px}
+.side-bar{width:3px;height:30px;border-radius:2px;flex-shrink:0}
+.side-bar.long{background:var(--green)}
+.side-bar.short{background:var(--red)}
+.sym-info{display:flex;flex-direction:column;gap:2px}
+.sym-name{font-weight:600;font-size:12px}
+.sym-tags{display:flex;gap:3px}
+.tag{background:rgba(255,255,255,.07);color:var(--muted2);padding:1px 4px;border-radius:2px;font-size:9px;font-weight:600}
+.liq-col{color:var(--orange);font-weight:600}
+.pnl-cell{font-weight:600}
+.close-btn,.cancel-btn{background:var(--panel2);color:var(--text);border:1px solid var(--border2);padding:3px 9px;border-radius:3px;cursor:pointer;font-size:10px;font-family:var(--font-mono);transition:all .15s}
+.close-btn:hover{background:rgba(246,70,93,.15);border-color:var(--red);color:var(--red)}
+.cancel-btn{color:var(--red);border-color:rgba(246,70,93,.25)}
+.cancel-btn:hover{background:rgba(246,70,93,.1)}
+.empty-state{color:var(--muted);font-size:11px;text-align:center;padding:28px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.empty-state .icon{font-size:24px;opacity:.4}
+
+/* ORDER BOOK */
+.book-col{display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--panel);min-height:0}
+.col-title{padding:12px 12px 8px;font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border);flex-shrink:0}
+.book-hdr{display:grid;grid-template-columns:1.4fr 0.9fr 1fr;padding:6px 10px;color:var(--muted);font-size:10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.book-hdr span:not(:first-child){text-align:right}
+.book-rows{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.asks-wrap,.bids-wrap{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-height:0}
+.asks-wrap{justify-content:flex-end}
+.book-row{display:grid;grid-template-columns:1.4fr 0.9fr 1fr;padding:2px 10px;cursor:pointer;transition:background .1s;position:relative}
+.book-row:hover{background:rgba(255,255,255,.04)}
+.book-row span:not(:first-child){text-align:right}
+.book-row .qty-col{color:var(--text) !important;font-size:11px}
+.book-row .total-col{color:var(--muted2) !important;font-size:10px}
+.book-row .bg-fill{position:absolute;right:0;top:0;height:100%;opacity:.08;pointer-events:none}
+.mid-row{padding:10px 12px;text-align:center;font-family:var(--font-display);font-size:16px;font-weight:700;background:var(--panel2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-shrink:0}
+.mid-row .spread{font-size:9px;color:var(--muted);margin-left:8px}
+
+/* TRADE PANEL */
+.trade-col{padding:16px;overflow-y:auto;background:var(--panel)}
+.mode-row{display:flex;gap:8px;margin-bottom:16px}
+.mode-btn,.lev-btn{flex:1;background:var(--panel2);color:var(--text);border:1px solid var(--border2);padding:8px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);font-size:11px;font-weight:600;transition:all .15s}
+.mode-btn:hover,.lev-btn:hover{border-color:var(--yellow);color:var(--yellow)}
+.lev-btn{color:var(--yellow);border-color:rgba(240,185,11,.3)}
+.order-type-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:14px}
+.ot-btn{flex:1;background:none;border:none;color:var(--muted2);padding:8px 0;cursor:pointer;font-family:var(--font-mono);font-size:11px;font-weight:600;border-bottom:2px solid transparent;transition:all .15s}
+.ot-btn.active{color:var(--yellow);border-bottom-color:var(--yellow)}
+.avbl-row{display:flex;justify-content:space-between;margin-bottom:12px;font-size:11px}
+.avbl-row .lbl{color:var(--muted2)}
+.avbl-row .val{font-weight:600}
+.inp-group{background:var(--panel2);border:1px solid var(--border2);border-radius:4px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;transition:border-color .15s}
+.inp-group:focus-within{border-color:var(--yellow)}
+.inp-group .lbl{color:var(--muted2);font-size:11px;flex-shrink:0}
+.inp-group input{background:none;border:none;color:var(--text);text-align:right;flex:1;font-family:var(--font-mono);font-size:13px;font-weight:600;min-width:0}
+.inp-group .unit{color:var(--muted2);margin-left:6px;font-size:11px}
+.slider-wrap{margin:18px 0 6px;position:relative;padding:0 2px}
+.slider-pcts{display:flex;justify-content:space-between;margin-top:8px}
+.slider-pcts span{font-size:9px;color:var(--muted);cursor:pointer}
+.slider-pcts span:hover{color:var(--yellow)}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.buy-btn,.sell-btn{padding:13px;border:none;border-radius:4px;font-family:var(--font-mono);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;letter-spacing:.3px}
+.buy-btn{background:var(--green);color:#0a1a12}
+.buy-btn:hover{background:#0fdf90}
+.sell-btn{background:var(--red);color:#1a080a}
+.sell-btn:hover{background:#ff4f6a}
+.cost-row{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted2)}
+.cost-row .val{color:var(--text);font-weight:600}
+
+/* MARGIN MODAL */
+.margin-modal-opts{display:flex;gap:10px;margin-bottom:20px}
+.margin-opt{flex:1;padding:14px 10px;background:var(--panel2);border:1px solid var(--border2);border-radius:4px;cursor:pointer;text-align:center;font-family:var(--font-mono);font-size:12px;font-weight:600;transition:all .15s;color:var(--muted2)}
+.margin-opt:hover{border-color:var(--yellow);color:var(--text)}
+.margin-opt.selected{border-color:var(--yellow);color:var(--yellow);background:rgba(240,185,11,.07)}
+.margin-opt-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.margin-opt-desc{font-size:10px;color:var(--muted);font-weight:400;line-height:1.4}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal-box{background:#1a1e26;border:1px solid var(--border2);border-radius:8px;width:360px;padding:24px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font-family:var(--font-display);font-size:15px;font-weight:700}
+.modal-close{cursor:pointer;font-size:22px;color:var(--muted2);line-height:1}
+.modal-close:hover{color:var(--text)}
+.lev-ctrl{display:flex;align-items:center;background:var(--panel2);border:1px solid var(--border2);border-radius:4px;margin-bottom:24px}
+.lev-ctrl button{width:48px;height:48px;background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;transition:color .15s}
+.lev-ctrl button:hover{color:var(--yellow)}
+.lev-val{flex:1;text-align:center;font-family:var(--font-display);font-size:20px;font-weight:700;border-left:1px solid var(--border2);border-right:1px solid var(--border2)}
+.lev-val span{color:var(--muted2);font-size:14px}
+.lev-slider{-webkit-appearance:none;width:100%;height:3px;background:var(--border2);border-radius:3px;outline:none;margin-bottom:8px}
+.lev-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--yellow);border-radius:2px;cursor:pointer;transform:rotate(45deg)}
+.lev-marks{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;margin-bottom:20px}
+.confirm-btn{width:100%;background:var(--yellow);color:#0a0800;padding:13px;border:none;border-radius:4px;font-family:var(--font-mono);font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.confirm-btn:hover{opacity:.88}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;padding:12px 16px;font-size:12px;z-index:3000;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;max-width:300px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.warn{border-left:3px solid var(--yellow)}
+
+/* SCROLLBARS */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-main">PXELIGHT</span>
+    <span class="logo-sub">FUTURES</span>
+  </div>
+  <div class="header-right">
+    <div class="conn-dot" id="conn-dot"></div>
+    <span class="conn-label" id="conn-label">Bağlanıyor...</span>
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- LEFT -->
+  <div class="main-col">
+    <div class="ticker">
+      <div class="pair-wrap">
+        <div class="pair-name">
+          <span class="sym" id="active-sym">BTC</span><span class="sep">/</span>USDT
+          <span class="perp-badge">PERP</span>
+          <span class="pair-arrow">▾</span>
+        </div>
+        <div class="market-dropdown">
+          <div class="mdd-header">Piyasalar</div>
+          <div class="mdd-list" id="mdd-list"></div>
+        </div>
+      </div>
+      <div class="price-live" id="live-price">—</div>
+      <div class="ticker-stats">
+        <div class="tstat"><span class="lbl">Mark</span><span class="val" id="mark-price">—</span></div>
+        <div class="tstat"><span class="lbl">Index</span><span class="val" id="idx-price">—</span></div>
+        <div class="tstat"><span class="lbl">Fonlama / Geri Sayım</span><span class="val funding-val" id="funding-cd">0.0100% / —</span></div>
+        <div class="tstat"><span class="lbl">24s Değişim</span><span class="val" id="chg-24h">—</span></div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div id="tv-widget"></div>
+    </div>
+
+    <div class="bottom-panel">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('pos',this)" id="pos-tab">Pozisyonlar (0)</button>
+        <button class="tab-btn" onclick="showTab('orders',this)" id="ord-tab">Emirler (0)</button>
+        <button class="tab-btn" onclick="showTab('assets',this)">Varlıklar</button>
+      </div>
+      <div class="tab-content active" id="tab-pos">
+        <table>
+          <thead><tr><th>Sembol</th><th>Miktar</th><th>Giriş Fiyatı</th><th>Mark Fiyat</th><th>Liq. Fiyat</th><th>PNL (ROI%)</th><th>Kapat</th></tr></thead>
+          <tbody id="pos-body"></tbody>
+        </table>
+        <div class="empty-state" id="pos-empty"><div class="icon"></div>Açık pozisyon yok</div>
+      </div>
+      <div class="tab-content" id="tab-orders">
+        <table>
+          <thead><tr><th>Sembol</th><th>Tür</th><th>Yön</th><th>Fiyat</th><th>Miktar</th><th>İşlem</th></tr></thead>
+          <tbody id="ord-body"></tbody>
+        </table>
+        <div class="empty-state" id="ord-empty"><div class="icon"></div>Bekleyen emir yok</div>
+      </div>
+      <div class="tab-content" id="tab-assets">
+        <table>
+          <thead><tr><th>Varlık</th><th>Cüzdan Bakiyesi</th><th>Gerçekleşmemiş PNL</th><th>Marjin Bakiyesi</th><th>Kullanılabilir</th></tr></thead>
+          <tbody id="assets-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDER BOOK -->
+  <div class="book-col">
+    <div class="col-title">Emir Defteri</div>
+    <div class="book-hdr">
+      <span>Fiyat (USDT)</span><span style="text-align:right">Miktar</span><span style="text-align:right">Toplam</span>
+    </div>
+    <div class="book-rows">
+      <div class="asks-wrap" id="asks"></div>
+      <div class="mid-row" id="mid-row">—<span class="spread"></span></div>
+      <div class="bids-wrap" id="bids"></div>
+    </div>
+  </div>
+
+  <!-- TRADE PANEL -->
+  <div class="trade-col">
+    <div class="mode-row">
+      <button class="mode-btn" id="margin-btn" onclick="toggleMargin()">İzole</button>
+      <button class="lev-btn" id="lev-btn" onclick="openLevModal()">20x</button>
+    </div>
+    <div class="order-type-tabs">
+      <button class="ot-btn active" onclick="setOrderType('Limit',this)">Limit</button>
+      <button class="ot-btn" onclick="setOrderType('Market',this)">Market</button>
+      <button class="ot-btn" onclick="setOrderType('StopLimit',this)">Stop-Limit</button>
+    </div>
+    <div class="avbl-row">
+      <span class="lbl">Kullanılabilir</span>
+      <span class="val" id="avbl" onclick="openBalModal()" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px" title="Transfer Et">100.00 USDT ✎</span>
+    </div>
+    <div class="inp-group" id="price-group">
+      <span class="lbl">Fiyat</span>
+      <input type="number" id="price-inp" step="0.01" placeholder="0.00">
+      <span class="unit">USDT</span>
+    </div>
+    <div class="inp-group" id="stop-group" style="display:none">
+      <span class="lbl">Stop</span>
+      <input type="number" id="stop-inp" step="0.01" placeholder="0.00">
+      <span class="unit">USDT</span>
+    </div>
+    <div id="reduce-only-wrap" style="display:none;align-items:center;gap:8px;margin-bottom:10px;cursor:pointer" onclick="toggleReduceOnly()">
+      <div id="reduce-only-box" style="width:14px;height:14px;border:1px solid var(--border2);border-radius:2px;background:var(--panel2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s"></div>
+      <span style="font-size:11px;color:var(--muted2);user-select:none">Yalnızca Azalt</span>
+    </div>
+    <div class="inp-group">
+      <span class="lbl">Miktar</span>
+      <input type="number" id="size-inp" placeholder="0.000">
+      <span class="unit" id="coin-unit">BTC</span>
+    </div>
+    <div class="slider-wrap">
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="range" min="0" max="100" value="0" step="1" id="size-slider" class="lev-slider" style="flex:1;margin-bottom:0" oninput="setSlider(parseInt(this.value))">
+        <span id="slider-pct-label" style="color:var(--yellow);font-size:12px;font-weight:600;min-width:34px;text-align:right">0%</span>
+      </div>
+      <div class="slider-pcts">
+        <span onclick="setSlider(0)">0%</span><span onclick="setSlider(25)">25%</span>
+        <span onclick="setSlider(50)">50%</span><span onclick="setSlider(75)">75%</span>
+        <span onclick="setSlider(100)">100%</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="buy-btn" onclick="placeTrade('Long')">AL/UZUN</button>
+      <button class="sell-btn" onclick="placeTrade('Short')">SAT/KISA</button>
+    </div>
+    <div class="cost-row">
+      <span>Maliyet</span><span class="val" id="cost-display">0.00 USDT</span>
+    </div>
+    <div class="cost-row" style="margin-top:4px;padding-top:4px;border-top:none">
+      <span>Maks. Uzun</span><span class="val" id="max-long">— BTC</span>
+    </div>
+    <div class="cost-row" style="margin-top:4px;padding-top:4px;border-top:none">
+      <span>Maks. Kısa</span><span class="val" id="max-short">— BTC</span>
+    </div>
+    <div class="cost-row" style="margin-top:4px;padding-top:4px;border-top:none;position:relative">
+      <span style="color:var(--orange);cursor:default" id="comm-label">Komisyon (%0.05)
+        <span id="comm-tooltip" style="display:none;position:absolute;bottom:22px;left:0;background:#1a1e26;border:1px solid var(--border2);border-radius:4px;padding:7px 10px;font-size:10px;color:var(--text);white-space:nowrap;z-index:100;line-height:1.6">
+          Açılış: <span id="comm-open">—</span> USDT<br>
+          Kapanış: ~<span id="comm-close">—</span> USDT<br>
+          Toplam: ~<span id="comm-total">—</span> USDT
+        </span>
+      </span>
+      <span class="val" style="color:var(--orange)" id="comm-display">— USDT</span>
+    </div>
+  </div>
+</div>
+
+<!-- LEVERAGE MODAL -->
+<div class="modal-bg" id="lev-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      Kaldıraç Ayarla
+      <span class="modal-close" onclick="closeLevModal()">×</span>
+    </div>
+    <div style="color:var(--muted2);font-size:11px;margin-bottom:10px">Kaldıraç</div>
+    <div class="lev-ctrl">
+      <button onclick="adjLev(-1)">−</button>
+      <div class="lev-val"><span id="lev-modal-val">20</span><span>x</span></div>
+      <button onclick="adjLev(1)">+</button>
+    </div>
+    <input type="range" min="1" max="125" value="20" class="lev-slider" id="lev-range" oninput="syncLev(this.value)">
+    <div class="lev-marks" id="lev-marks"><span>1x</span><span>25x</span><span>50x</span><span>75x</span><span>100x</span><span>125x</span></div>
+    <button class="confirm-btn" onclick="confirmLev()">Onayla</button>
+  </div>
+</div>
+
+<!-- BALANCE MODAL -->
+<div class="modal-bg" id="bal-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      Bakiye Ayarla
+      <span class="modal-close" onclick="closeBalModal()">×</span>
+    </div>
+    <div style="color:var(--muted2);font-size:11px;margin-bottom:8px">Mevcut bakiye: <span id="bal-current" style="color:var(--text);font-weight:600"></span> USDT</div>
+    <div class="inp-group" style="margin-bottom:20px">
+      <span class="lbl">Yeni Bakiye</span>
+      <input type="number" id="bal-inp" placeholder="0.00" min="1" step="1">
+      <span class="unit">USDT</span>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:20px">
+      <button onclick="setBalQuick(100)" class="mode-btn">100</button>
+      <button onclick="setBalQuick(500)" class="mode-btn">500</button>
+      <button onclick="setBalQuick(1000)" class="mode-btn">1,000</button>
+      <button onclick="setBalQuick(10000)" class="mode-btn">10,000</button>
+    </div>
+    <button class="confirm-btn" onclick="confirmBal()">Onayla</button>
+  </div>
+</div>
+
+<!-- MARGIN MODAL -->
+<div class="modal-bg" id="margin-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      Marjin Modu
+      <span class="modal-close" onclick="closeMarginModal()">×</span>
+    </div>
+    <div class="margin-modal-opts">
+      <div class="margin-opt" id="opt-isolated" onclick="selectMargin('İzole')">
+        <div class="margin-opt-title">İzole</div>
+        <div class="margin-opt-desc">Riskiniz bu pozisyon için ayırdığınız marjinle sınırlıdır.</div>
+      </div>
+      <div class="margin-opt" id="opt-cross" onclick="selectMargin('Çapraz')">
+        <div class="margin-opt-title">Çapraz</div>
+        <div class="margin-opt-desc">Tüm bakiyeniz marjin olarak kullanılır, tasfiyeyi geciktirir.</div>
+      </div>
+    </div>
+    <button class="confirm-btn" onclick="confirmMargin()">Onayla</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://s3.tradingview.com/tv.js"></script>
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let coin = 'BTC';
+let walletBalance = 100.00;
+let livePrice = 0;
+let prevPrice = 0;
+let orderType = 'Limit';
+let leverage = 20;
+let leverageMap = {}; // per-coin
+let marginMap = {};   // per-coin margin mode
+let tempLev = 20;
+let marginMode = 'İzole';
+const MAX_LEV = { BTC: 150, ETH: 150 }; // diğerleri 75x
+function maxLevForCoin(c) { return MAX_LEV[c] || 75; }
+let positions = [];
+let pendingOrders = [];
+let ws = null;
+let bgWs = {};
+let livePrices = {};
+
+let sliderPct = 0;
+let lastPriceDirection = 1;
+let reduceOnly = false;
+
+function toggleReduceOnly() {
+  reduceOnly = !reduceOnly;
+  const box = document.getElementById('reduce-only-box');
+  box.style.background = reduceOnly ? 'var(--yellow)' : 'var(--panel2)';
+  box.style.borderColor = reduceOnly ? 'var(--yellow)' : 'var(--border2)';
+  box.innerHTML = reduceOnly ? '<span style="color:#0a0800;font-size:10px;font-weight:700;line-height:1">✓</span>' : '';
+  if (reduceOnly) {
+    // Long butonu → Short pozisyonu kapatır; Short butonu → Long pozisyonu kapatır
+    document.querySelector('.buy-btn').textContent  = 'KAPAT KISA';
+    document.querySelector('.sell-btn').textContent = 'KAPAT UZUN';
+  } else {
+    document.querySelector('.buy-btn').textContent  = 'AL/UZUN';
+    document.querySelector('.sell-btn').textContent = 'SAT/KISA';
+  }
+  document.getElementById('size-inp').value = '';
+  setSlider(sliderPct);
+}
+
+function setSlider(pct) {
+  sliderPct = pct;
+  const slider = document.getElementById('size-slider');
+  slider.value = pct;
+  slider.style.background = `linear-gradient(to right, var(--yellow) 0%, var(--yellow) ${pct}%, var(--border2) ${pct}%, var(--border2) 100%)`;
+  document.getElementById('slider-pct-label').textContent = pct + '%';
+  let size = 0;
+  if (reduceOnly) {
+    // Hangi pozisyonun kapatılacağını buton metninden belirle
+    const buyBtnText = document.querySelector('.buy-btn').textContent;
+    const closingSide = buyBtnText.includes('KAPAT KISA') ? 'Short' : 
+                       buyBtnText.includes('KAPAT UZUN') ? 'Long' : null;
+    
+    if (closingSide) {
+      const targetPos = positions.find(p => p.symbol === coin && p.side === closingSide);
+      if (targetPos) {
+        size = targetPos.size * (pct / 100);
+      } else {
+        size = 0;
+        // Eğer kapatılacak pozisyon yoksa uyarı göster
+        if (pct > 0) {
+          toast(`${coin} için ${closingSide} pozisyonu bulunamadı`, 'warn');
+        }
+      }
+    }
+  } else if (livePrice > 0) {
+    const price = parseFloat(document.getElementById('price-inp').value) || livePrice;
+    const costPerUnit = price * (1 / leverage + COMMISSION_RATE);
+    size = (walletBalance * (pct / 100) * 0.9999) / costPerUnit;
+  }
+  document.getElementById('size-inp').value = size > 0 ? size.toFixed(coinDecimals[coin] + 2) : '';
+  updateCostDisplay();
+}
+
+const COINS = ['BTC','ETH','SOL','XRP','BNB','LINK','ADA','AVAX','DOT','DOGE','LTC','ETC','FIL','NEAR'];
+const coinDecimals = {BTC:2,ETH:2,SOL:3,XRP:4,BNB:2,LINK:3,ADA:4,AVAX:3,DOT:3,DOGE:4,LTC:2,ETC:2,FIL:3,NEAR:3};
+const coinMinSizes = {BTC:0.001,ETH:0.01,SOL:0.1,XRP:1,BNB:0.01,LINK:0.1,ADA:1,AVAX:0.1,DOT:0.1,DOGE:1,LTC:0.01,ETC:0.1,FIL:0.1,NEAR:0.1};
+
+// ── WEBSOCKET ──────────────────────────────────────────────────────────────────
+function connectWS(symbol) {
+  if (ws) { ws.close(); ws = null; }
+  setConn(false);
+  ws = new WebSocket(`wss://fstream.binance.com/ws/${symbol.toLowerCase()}usdt@ticker`);
+  ws.onopen = () => setConn(true);
+  ws.onclose = () => { setConn(false); setTimeout(()=>connectWS(coin), 3000); };
+  ws.onerror = () => { setConn(false); };
+  ws.onmessage = (e) => {
+    const d = JSON.parse(e.data);
+    prevPrice = livePrice;
+    livePrice = parseFloat(d.c);
+    livePrices[symbol.toUpperCase()] = livePrice;
+    lastPriceDirection = livePrice >= prevPrice ? 1 : -1;
+    updateTicker(d);
+    renderOrderBook(livePrice);
+    checkPendingOrders();
+    updatePNL();
+    updateCostDisplay();
+  };
+}
+
+function ensureBgWS(symbol) {
+  if (symbol === coin) return;
+  if (bgWs[symbol]) return;
+  const s = new WebSocket(`wss://fstream.binance.com/ws/${symbol.toLowerCase()}usdt@ticker`);
+  s.onmessage = (e) => {
+    const d = JSON.parse(e.data);
+    livePrices[symbol] = parseFloat(d.c);
+    updatePNL();
+  };
+  s.onclose = () => { delete bgWs[symbol]; };
+  bgWs[symbol] = s;
+}
+
+function cleanBgWS() {
+  const needed = new Set(positions.map(p => p.symbol));
+  Object.keys(bgWs).forEach(sym => {
+    if (!needed.has(sym)) { bgWs[sym].close(); delete bgWs[sym]; }
+  });
+}
+
+let connectedOnce = false;
+function setConn(ok) {
+  document.getElementById('conn-dot').style.background = ok ? 'var(--green)' : 'var(--red)';
+  document.getElementById('conn-dot').style.boxShadow = ok ? '0 0 8px var(--green)' : '0 0 8px var(--red)';
+  if (ok) {
+    connectedOnce = true;
+    document.getElementById('conn-label').textContent = 'Canlı Bağlantı';
+  } else if (!connectedOnce) {
+    document.getElementById('conn-label').textContent = 'Bağlanıyor...';
+  }
+}
+
+// ── TICKER UPDATE ──────────────────────────────────────────────────────────────
+function updateTicker(d) {
+  const el = document.getElementById('live-price');
+  el.textContent = fmt(livePrice, coinDecimals[coin]);
+  el.className = 'price-live ' + (lastPriceDirection > 0 ? '' : 'down');
+  document.getElementById('mark-price').textContent = fmt(livePrice * 1.00008, coinDecimals[coin]);
+  document.getElementById('idx-price').textContent = fmt(livePrice * 0.99992, coinDecimals[coin]);
+  document.getElementById('mid-row').innerHTML = `${fmt(livePrice, coinDecimals[coin])}<span class="spread" style="color:var(--muted)"> Spread: ${(livePrice * 0.0002).toFixed(2)}</span>`;
+  const chg = parseFloat(d.P) || 0;
+  const chgEl = document.getElementById('chg-24h');
+  chgEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
+  chgEl.style.color = chg >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT';
+  if (orderType === 'Market') document.getElementById('price-inp').value = livePrice.toFixed(coinDecimals[coin]);
+  // max size: walletBalance = size * (price/leverage + price*COMMISSION_RATE) => size = walletBalance / (price * (1/leverage + COMMISSION_RATE))
+  const maxSize = (walletBalance / (livePrice * (1 / leverage + COMMISSION_RATE))).toFixed(coinDecimals[coin] + 2);
+  document.getElementById('max-long').textContent = maxSize + ' ' + coin;
+  document.getElementById('max-short').textContent = maxSize + ' ' + coin;
+}
+
+function fmt(v, dec = 2) {
+  return parseFloat(v).toLocaleString('en-US', {minimumFractionDigits: dec, maximumFractionDigits: dec});
+}
+
+// ── ORDER BOOK ─────────────────────────────────────────────────────────────────
+function renderOrderBook(price) {
+  if (!price) return;
+  const dec = coinDecimals[coin];
+  const step = price < 1 ? 0.0001 : price < 10 ? 0.001 : price < 100 ? 0.01 : price < 1000 ? 0.1 : 1;
+  let asksHtml = '', bidsHtml = '';
+
+  for (let i = 12; i >= 1; i--) {
+    const p = (price + i * step).toFixed(dec);
+    const qty = (Math.random() * 2 + 0.1).toFixed(3);
+    const total = (parseFloat(p) * parseFloat(qty)).toFixed(2);
+    const fill = Math.min(95, 20 + Math.random() * 60);
+    asksHtml += `<div class="book-row" onclick="setBookPrice(${p})" style="color:var(--red)">
+      <span>${fmt(parseFloat(p), dec)}</span><span class="qty-col">${qty}</span><span class="total-col">${fmt(parseFloat(total),2)}</span>
+      <div class="bg-fill" style="width:${fill}%;background:var(--red)"></div></div>`;
+  }
+  for (let i = 1; i <= 12; i++) {
+    const p = Math.max(0.0001, price - i * step).toFixed(dec);
+    const qty = (Math.random() * 2 + 0.1).toFixed(3);
+    const total = (parseFloat(p) * parseFloat(qty)).toFixed(2);
+    const fill = Math.min(95, 20 + Math.random() * 60);
+    bidsHtml += `<div class="book-row" onclick="setBookPrice(${p})" style="color:var(--green)">
+      <span>${fmt(parseFloat(p), dec)}</span><span class="qty-col">${qty}</span><span class="total-col">${fmt(parseFloat(total),2)}</span>
+      <div class="bg-fill" style="width:${fill}%;background:var(--green)"></div></div>`;
+  }
+  document.getElementById('asks').innerHTML = asksHtml;
+  document.getElementById('bids').innerHTML = bidsHtml;
+}
+
+function setBookPrice(p) {
+  document.getElementById('price-inp').value = p;
+  if (orderType === 'Market') {
+    orderType = 'Limit';
+    document.querySelectorAll('.ot-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.ot-btn')[0].classList.add('active');
+    document.getElementById('price-group').style.opacity = '1';
+    document.getElementById('price-group').style.pointerEvents = '';
+  }
+  updateCostDisplay();
+}
+
+// ── MARKETS ────────────────────────────────────────────────────────────────────
+async function renderMarkets() {
+  try {
+    const symbols = COINS.map(c => `"${c}USDT"`).join(',');
+    const res = await fetch(`https://fapi.binance.com/fapi/v1/ticker/24hr`);
+    const data = await res.json();
+    const map = {};
+    data.forEach(d => { map[d.symbol] = parseFloat(d.priceChangePercent); });
+    document.getElementById('mdd-list').innerHTML = COINS.map(c => {
+      const chg = map[c + 'USDT'] ?? 0;
+      const color = chg >= 0 ? 'var(--green)' : 'var(--red)';
+      const sign = chg >= 0 ? '+' : '';
+      return `<div class="mdd-item" onclick="changeCoin('${c}')">
+        <div><span class="coin">${c}</span><span class="usdt">/USDT</span></div>
+        <span class="chg" style="color:${color}">${sign}${chg.toFixed(2)}%</span>
+      </div>`;
+    }).join('');
+  } catch {
+    document.getElementById('mdd-list').innerHTML = COINS.map(c =>
+      `<div class="mdd-item" onclick="changeCoin('${c}')">
+        <div><span class="coin">${c}</span><span class="usdt">/USDT</span></div>
+        <span class="chg" style="color:var(--muted2)">—</span>
+      </div>`
+    ).join('');
+  }
+}
+
+function changeCoin(c) {
+  const prevCoin = coin;
+  coin = c;
+  livePrice = 0;
+  document.getElementById('active-sym').textContent = c;
+  document.getElementById('coin-unit').textContent = c;
+  document.getElementById('live-price').textContent = '—';
+  document.getElementById('price-inp').value = '';
+  document.getElementById('size-inp').value = '';
+  document.querySelector('.market-dropdown').classList.remove('open');
+  leverage = Math.min(leverageMap[c] || 20, maxLevForCoin(c));
+  marginMode = marginMap[c] || 'İzole';
+  document.getElementById('lev-btn').textContent = leverage + 'x';
+  document.getElementById('margin-btn').textContent = marginMode;
+  loadTVWidget(c);
+  connectWS(c);
+  // If old coin had open positions, start a bg WS for it now
+  const posSymbols = new Set(positions.map(p => p.symbol));
+  posSymbols.forEach(sym => { if (sym !== c) ensureBgWS(sym); });
+}
+
+// ── TRADINGVIEW ────────────────────────────────────────────────────────────────
+let tvWidget = null;
+
+function loadTVWidget(sym) {
+  document.getElementById('tv-widget').innerHTML = '';
+  if (typeof TradingView === 'undefined') return;
+  tvWidget = new TradingView.widget({
+    autosize: true,
+    symbol: `BINANCE:${sym}USDT.P`,
+    interval: '15',
+    theme: 'dark',
+    locale: 'tr',
+    container_id: 'tv-widget',
+    hide_top_toolbar: false,
+    hide_legend: false,
+    allow_symbol_change: false,
+    save_image: false,
+    style: '1',
+    toolbar_bg: '#13161b',
+    enable_publishing: false,
+    overrides: {
+      'mainSeriesProperties.candleStyle.upColor': '#20b26c',
+      'mainSeriesProperties.candleStyle.downColor': '#ef454a',
+      'mainSeriesProperties.candleStyle.borderUpColor': '#20b26c',
+      'mainSeriesProperties.candleStyle.borderDownColor': '#ef454a',
+      'mainSeriesProperties.candleStyle.wickUpColor': '#20b26c',
+      'mainSeriesProperties.candleStyle.wickDownColor': '#ef454a',
+      'paneProperties.background': '#101014',
+      'paneProperties.backgroundType': 'solid',
+      'volumePaneSize': 'medium',
+      'volume.volume.color.0': '#ef454a',
+      'volume.volume.color.1': '#20b26c',
+      'volume.volume ma.visible': false,
+    },
+    onChartReady: function() {
+      drawPositionLines();
+    }
+  });
+}
+
+function drawPositionLines() {
+  if (!tvWidget || !tvWidget.activeChart) return;
+  try {
+    const chart = tvWidget.activeChart();
+    // Remove old position lines
+    if (window._posLines) window._posLines.forEach(l => { try { l.remove(); } catch(e){} });
+    window._posLines = [];
+    positions.filter(p => p.symbol === coin).forEach(p => {
+      const color = p.side === 'Long' ? '#20b26c' : '#ef454a';
+      const line = chart.createPositionLine()
+        .setPrice(p.entry)
+        .setLineColor(color)
+        .setBodyBackgroundColor(color)
+        .setBodyTextColor('#ffffff')
+        .setLineStyle(0)
+        .setLineLength(3)
+        .setText(`${p.side} ${p.size} · Giriş`)
+        .setQuantity(fmt(p.entry, coinDecimals[coin] || 2));
+      window._posLines.push(line);
+    });
+  } catch(e) {}
+}
+
+// ── TRADE EXECUTION ────────────────────────────────────────────────────────────
+function calcAffordableSize(basePrice, baseLev, baseMode) {
+  // Only used when sliderPct === 100 to find a size that fits within walletBalance
+  if (baseMode === 'Çapraz') return null; // Cross doesn't deduct margin, no retry needed
+  const costPerUnit = basePrice * (1 / baseLev + COMMISSION_RATE);
+  for (let pct = 99; pct >= 95; pct--) {
+    const trySize = (walletBalance * (pct / 100)) / costPerUnit;
+    const cost = (basePrice * trySize) / baseLev;
+    const commission = basePrice * trySize * COMMISSION_RATE;
+    if (cost + commission <= walletBalance) return trySize;
+  }
+  return null;
+}
+
+function placeTrade(side) {
+  let size = parseFloat(document.getElementById('size-inp').value);
+  const priceInput = parseFloat(document.getElementById('price-inp').value);
+  if (!size || size <= 0 || isNaN(size)) { toast('Geçerli bir miktar girin', 'error'); return; }
+  if (!livePrice || livePrice <= 0) { toast('Fiyat bekleniyor...', 'warn'); return; }
+
+  if (orderType === 'Market') {
+    if (sliderPct === 100 && marginMode !== 'Çapraz') {
+      const usedPrice = livePrice;
+      const cost = (usedPrice * size) / leverage;
+      const commission = usedPrice * size * COMMISSION_RATE;
+      if (cost + commission > walletBalance) {
+        const retry = calcAffordableSize(usedPrice, leverage, marginMode);
+        if (!retry) { toast('Yetersiz bakiye!', 'error'); return; }
+        size = retry;
+      }
+    }
+    openPosition(side, livePrice, size);
+  } else if (orderType === 'Limit') {
+    if (!priceInput || priceInput <= 0) { toast('Fiyat girin', 'error'); return; }
+    if (reduceOnly) {
+      // "KAPAT SHORT" → side='Long' → kapatılacak pozisyon: Short
+      // "KAPAT LONG"  → side='Short' → kapatılacak pozisyon: Long
+      const closingSide = side === 'Long' ? 'Short' : 'Long';
+      const targetPos = positions.find(p => p.symbol === coin && p.side === closingSide);
+      if (!targetPos) { toast(`Yalnızca Azalt: Kapatılacak ${closingSide} pozisyon yok`, 'error'); return; }
+      const clampedSize = Math.min(size, targetPos.size);
+      const immediate = (side === 'Long' && priceInput >= livePrice) || (side === 'Short' && priceInput <= livePrice);
+      if (immediate) {
+        closePos(targetPos.id, clampedSize);
+      } else {
+        pendingOrders.push({ id: Date.now(), symbol: coin, side, price: priceInput, size: clampedSize, margin: 0, lev: leverage, mode: marginMode, reduceOnly: true, closingId: targetPos.id });
+        renderPendingOrders();
+        toast(`Limit Yalnızca Azalt verildi — ${closingSide} ${fmt(clampedSize, coinDecimals[coin] + 2)} ${coin}`, 'success');
+      }
+    } else {
+    const immediate = (side === 'Long' && priceInput >= livePrice) || (side === 'Short' && priceInput <= livePrice);
+    if (immediate) {
+      if (sliderPct === 100 && marginMode !== 'Çapraz') {
+        const cost = (livePrice * size) / leverage;
+        const commission = livePrice * size * COMMISSION_RATE;
+        if (cost + commission > walletBalance) {
+          const retry = calcAffordableSize(livePrice, leverage, marginMode);
+          if (!retry) { toast('Yetersiz bakiye!', 'error'); return; }
+          size = retry;
+        }
+      }
+      openPosition(side, livePrice, size);
+    } else {
+      const cost = (priceInput * size) / leverage;
+      const commission = priceInput * size * COMMISSION_RATE;
+      if ((cost + commission) > walletBalance) { toast('Yetersiz bakiye!', 'error'); return; }
+      walletBalance -= cost;
+      pendingOrders.push({ id: Date.now(), symbol: coin, side, price: priceInput, size, margin: cost, lev: leverage, mode: marginMode });
+      renderPendingOrders();
+      toast(`${side === 'Long' ? 'Long' : 'Short'} Limit emir verildi: ${fmt(priceInput, coinDecimals[coin])} USDT`, 'success');
+    }
+    }
+  } else if (orderType === 'StopLimit') {
+    const stopPrice = parseFloat(document.getElementById('stop-inp').value);
+    if (!stopPrice || !priceInput) { toast('Stop ve limit fiyat girin', 'error'); return; }
+    if (reduceOnly) {
+      // "KAPAT SHORT" → side='Long' → kapatılacak pozisyon: Short
+      // "KAPAT LONG"  → side='Short' → kapatılacak pozisyon: Long
+      const closingSide = side === 'Long' ? 'Short' : 'Long';
+      const targetPos = positions.find(p => p.symbol === coin && p.side === closingSide);
+      if (!targetPos) { toast(`Yalnızca Azalt: Kapatılacak ${closingSide} pozisyon yok`, 'error'); return; }
+      const clampedSize = Math.min(size, targetPos.size);
+      pendingOrders.push({ id: Date.now(), symbol: coin, side, price: priceInput, stopPrice, size: clampedSize, margin: 0, isStop: true, lev: leverage, mode: marginMode, reduceOnly: true, closingId: targetPos.id });
+      renderPendingOrders();
+      toast(`Stop-Limit Yalnızca Azalt verildi — ${closingSide} ${fmt(clampedSize, coinDecimals[coin] + 2)} ${coin}`, 'success');
+    } else {
+      const cost = (priceInput * size) / leverage;
+      const commission = priceInput * size * COMMISSION_RATE;
+      if ((cost + commission) > walletBalance) { toast('Yetersiz bakiye!', 'error'); return; }
+      walletBalance -= cost;
+      pendingOrders.push({ id: Date.now(), symbol: coin, side, price: priceInput, stopPrice, size, margin: cost, isStop: true, lev: leverage, mode: marginMode, reduceOnly: false });
+      renderPendingOrders();
+      toast(`Stop-Limit emir verildi`, 'success');
+    }
+  }
+  document.getElementById('size-inp').value = '';
+  setSlider(0);
+  updateCostDisplay();
+}
+
+const COMMISSION_RATE = 0.0005; // %0.05 taker fee
+
+function openPosition(side, entry, size, symOverride, levOverride, modeOverride, marginOverride) {
+  const sym = symOverride || coin;
+  const lev = levOverride || leverage;
+  const mode = modeOverride || marginMode;
+  const cost = marginOverride !== undefined ? marginOverride : (entry * size) / lev;
+  const commission = entry * size * COMMISSION_RATE;
+  const totalRequired = cost + commission;
+  if (marginOverride === undefined) {
+    if (totalRequired > walletBalance * 1.0001) { toast('Yetersiz bakiye!', 'error'); return; }
+    walletBalance -= cost;
+  }
+  walletBalance -= commission;
+  let liqPrice;
+  if (mode === 'Çapraz') {
+    // Cross: tüm cüzdan tampon — liq fiyatı çok daha uzakta
+    const walletBeforeOpen = walletBalance + cost; // cost henüz düşüldü, geri ekle
+    liqPrice = side === 'Long'
+      ? Math.max(0, entry - (walletBeforeOpen / size) * 0.9)
+      : entry + (walletBeforeOpen / size) * 0.9;
+  } else {
+    // Isolated: sadece marjin tampon
+    liqPrice = side === 'Long'
+      ? entry * (1 - 1 / lev * 0.9)
+      : entry * (1 + 1 / lev * 0.9);
+  }
+
+  // Merge with existing position on same symbol+side
+  const existing = positions.find(p => p.symbol === sym && p.side === side);
+  if (existing) {
+    const totalSize = existing.size + size;
+    existing.entry = (existing.entry * existing.size + entry * size) / totalSize; // weighted avg entry
+    existing.size = totalSize;
+    existing.margin += cost;
+    if (existing.mode === 'Çapraz') {
+      const wb = walletBalance + existing.margin;
+      existing.liq = side === 'Long'
+        ? Math.max(0, existing.entry - (wb / existing.size) * 0.9)
+        : existing.entry + (wb / existing.size) * 0.9;
+    } else {
+      existing.liq = side === 'Long'
+        ? existing.entry * (1 - 1 / existing.lev * 0.9)
+        : existing.entry * (1 + 1 / existing.lev * 0.9);
+    }
+    renderPositions();
+    toast(`${side === 'Long' ? 'Long' : 'Short'} eklendi @ ${fmt(entry, coinDecimals[sym] || 2)} · Ort. Giriş: ${fmt(existing.entry, coinDecimals[sym] || 2)} · Komisyon: ${fmt(commission, 2)} USDT`, 'success');
+    return;
+  }
+
+  positions.push({ id: Date.now(), symbol: sym, side, entry, size, lev, mode, margin: cost, pnl: 0, liq: liqPrice });
+  ensureBgWS(sym);
+  renderPositions();
+  toast(`${side === 'Long' ? 'Long' : 'Short'} açıldı @ ${fmt(entry, coinDecimals[sym] || 2)} · Komisyon: ${fmt(commission, 2)} USDT`, 'success');
+}
+
+function closePos(id, partialSize) {
+  const p = positions.find(x => x.id === id);
+  if (!p) return;
+  const closePrice = livePrices[p.symbol] || livePrice || p.entry;
+  if (partialSize && partialSize < p.size) {
+    const ratio = partialSize / p.size;
+    const partialPnl = p.pnl * ratio;
+    const partialMargin = p.margin * ratio;
+    const commission = closePrice * partialSize * COMMISSION_RATE;
+    const realizedPnl = partialPnl - commission;
+    walletBalance += partialMargin + realizedPnl;
+    p.size = parseFloat((p.size - partialSize).toFixed(8));
+    p.margin -= partialMargin;
+    renderPositions();
+    toast(`Kısmi kapanış: ${realizedPnl >= 0 ? '+' : ''}${fmt(realizedPnl, 2)} USDT · Komisyon: ${fmt(commission, 2)} USDT`, realizedPnl >= 0 ? 'success' : 'error');
+    return;
+  }
+  const commission = closePrice * p.size * COMMISSION_RATE;
+  const realizedPnl = p.pnl - commission;
+  walletBalance += p.margin + realizedPnl;
+  positions = positions.filter(x => x.id !== id);
+  cleanBgWS();
+  renderPositions();
+  toast(`Pozisyon kapatıldı: ${realizedPnl >= 0 ? '+' : ''}${fmt(realizedPnl, 2)} USDT · Komisyon: ${fmt(commission, 2)} USDT`, realizedPnl >= 0 ? 'success' : 'error');
+}
+
+function cancelOrder(id) {
+  const o = pendingOrders.find(x => x.id === id);
+  if (o) walletBalance += o.margin;
+  pendingOrders = pendingOrders.filter(x => x.id !== id);
+  renderPendingOrders();
+  toast('Emir iptal edildi', 'warn');
+}
+
+function checkPendingOrders() {
+  let filled = [];
+  pendingOrders.forEach(o => {
+    const oPrice = livePrices[o.symbol] || livePrice;
+    if (o.isStop) {
+      let stopHit;
+      if (o.reduceOnly) {
+        // Reduce Only: tetikleme yönü kapatılacak pozisyonun tarafına göre belirlenir
+        // Long pozisyonu kapatmak → stop aşağıda → fiyat stopPrice'ın altına düşünce tetikle
+        // Short pozisyonu kapatmak → stop yukarıda → fiyat stopPrice'ın üstüne çıkınca tetikle
+        const targetPos = positions.find(p => p.id === o.closingId);
+        if (!targetPos) { filled.push(o.id); return; } // pozisyon kapanmış, emri iptal
+        stopHit = (targetPos.side === 'Long' && oPrice <= o.stopPrice) ||
+                  (targetPos.side === 'Short' && oPrice >= o.stopPrice);
+      } else {
+        stopHit = (o.side === 'Long' && oPrice <= o.stopPrice) || (o.side === 'Short' && oPrice >= o.stopPrice);
+      }
+      if (stopHit) {
+        if (o.reduceOnly) {
+          const targetPos = positions.find(p => p.id === o.closingId);
+          if (targetPos) {
+            if (o.size >= targetPos.size) {
+              closePos(targetPos.id);
+            } else {
+              const ratio = o.size / targetPos.size;
+              const partialPnl = targetPos.pnl * ratio;
+              const partialMargin = targetPos.margin * ratio;
+              const closePrice = livePrices[targetPos.symbol] || livePrice || targetPos.entry;
+              const commission = closePrice * o.size * COMMISSION_RATE;
+              walletBalance += partialMargin + partialPnl - commission;
+              targetPos.size = parseFloat((targetPos.size - o.size).toFixed(8));
+              targetPos.margin -= partialMargin;
+              renderPositions();
+              toast(`Kısmi kapanış: ${partialPnl >= 0 ? '+' : ''}${fmt(partialPnl - commission, 2)} USDT`, partialPnl >= 0 ? 'success' : 'error');
+            }
+          }
+        } else {
+          walletBalance += o.margin;
+          openPosition(o.side, o.price, o.size, o.symbol, o.lev, o.mode);
+        }
+        filled.push(o.id);
+      }
+    } else {
+      const hit = (o.side === 'Long' && oPrice <= o.price) || (o.side === 'Short' && oPrice >= o.price);
+      if (hit) {
+        if (o.reduceOnly) {
+          const closingSide = o.side === 'Long' ? 'Short' : 'Long';
+          const targetPos = positions.find(p => p.id === o.closingId) || positions.find(p => p.symbol === o.symbol && p.side === closingSide);
+          if (targetPos) {
+            closePos(targetPos.id, o.size < targetPos.size ? o.size : undefined);
+          }
+        } else {
+          walletBalance += o.margin;
+          openPosition(o.side, o.price, o.size, o.symbol, o.lev, o.mode);
+        }
+        filled.push(o.id);
+      }
+    }
+  });
+  if (filled.length) { pendingOrders = pendingOrders.filter(o => !filled.includes(o.id)); renderPendingOrders(); }
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────────
+function renderPositions() {
+  const body = document.getElementById('pos-body');
+  const empty = document.getElementById('pos-empty');
+  document.getElementById('pos-tab').textContent = `Pozisyonlar (${positions.length})`;
+  if (positions.length === 0) { body.innerHTML = ''; empty.style.display = 'flex'; drawPositionLines(); return; }
+  empty.style.display = 'none';
+  body.innerHTML = positions.map(p => `
+    <tr>
+      <td><div class="sym-cell"><div class="side-bar ${p.side==='Long'?'long':'short'}"></div>
+        <div class="sym-info"><span class="sym-name">${p.symbol}USDT</span>
+        <div class="sym-tags"><span class="tag">${p.mode}</span><span class="tag">${p.lev}x</span></div></div></div></td>
+      <td>${p.size}</td>
+      <td>${fmt(p.entry, coinDecimals[p.symbol] || 2)}</td>
+      <td>${livePrices[p.symbol] ? fmt(livePrices[p.symbol], coinDecimals[p.symbol] || 2) : '—'}</td>
+      <td class="liq-col">${fmt(p.liq, coinDecimals[p.symbol] || 2)}</td>
+      <td class="pnl-cell" id="pnl-${p.id}" style="color:${p.pnl>=0?'var(--green)':'var(--red)'}">
+        ${fmt(p.pnl,2)} USDT (${p.margin > 0 ? ((p.pnl/p.margin)*100).toFixed(2) : '0.00'}%)</td>
+      <td><button class="close-btn" onclick="closePos(${p.id})">Market</button></td>
+    </tr>`).join('');
+  drawPositionLines();
+}
+
+function renderPendingOrders() {
+  const body = document.getElementById('ord-body');
+  const empty = document.getElementById('ord-empty');
+  document.getElementById('ord-tab').textContent = `Emirler (${pendingOrders.length})`;
+  if (pendingOrders.length === 0) { body.innerHTML = ''; empty.style.display = 'flex'; return; }
+  empty.style.display = 'none';
+  body.innerHTML = pendingOrders.map(o => `
+    <tr>
+      <td>${o.symbol}USDT</td>
+      <td>${o.isStop ? 'Stop-Limit' + (o.reduceOnly ? ' <span class="tag" style="color:var(--orange);background:rgba(255,154,0,.12)">RO</span>' : '') : 'Limit'}</td>
+      <td style="color:${o.side==='Long'?'var(--green)':'var(--red)'}">${o.side === 'Long' ? 'Alış' : 'Satış'}</td>
+      <td>${fmt(o.price, coinDecimals[o.symbol] || 2)}</td>
+      <td>${o.size}</td>
+      <td><button class="cancel-btn" onclick="cancelOrder(${o.id})">İptal</button></td>
+    </tr>`).join('');
+}
+
+function updatePNL() {
+  let totalUnrealized = 0;
+  positions.forEach(p => {
+    const posPrice = livePrices[p.symbol] || 0;
+    if (!posPrice) return;
+    const diff = p.side === 'Long' ? (posPrice - p.entry) : (p.entry - posPrice);
+    p.pnl = diff * p.size;
+    totalUnrealized += p.pnl;
+    const cell = document.getElementById(`pnl-${p.id}`);
+    if (cell) {
+      const roi = p.margin > 0 ? ((p.pnl / p.margin) * 100).toFixed(2) : '0.00';
+      cell.style.color = p.pnl >= 0 ? 'var(--green)' : 'var(--red)';
+      cell.textContent = `${fmt(p.pnl, 2)} USDT (${roi}%)`;
+    }
+  });
+  // assets tab
+  const allMargin = positions.reduce((s, p) => s + p.margin, 0);
+  const walletDisplay = walletBalance + allMargin;
+  document.getElementById('assets-body').innerHTML = `
+    <tr>
+      <td>USDT</td>
+      <td>${fmt(walletDisplay, 2)}</td>
+      <td style="color:${totalUnrealized>=0?'var(--green)':'var(--red)'}">${fmt(totalUnrealized,2)}</td>
+      <td>${fmt(walletDisplay + totalUnrealized, 2)}</td>
+      <td>${fmt(walletBalance, 2)}</td>
+    </tr>`;
+}
+
+function updateCostDisplay() {
+  const size = parseFloat(document.getElementById('size-inp').value) || 0;
+  const price = parseFloat(document.getElementById('price-inp').value) || livePrice || 0;
+  const margin = (price * size) / leverage;
+  const commOpen = price * size * COMMISSION_RATE;
+  const commClose = price * size * COMMISSION_RATE;
+  const commTotal = commOpen + commClose;
+  document.getElementById('cost-display').textContent = fmt(margin + commOpen, 2) + ' USDT';
+  document.getElementById('comm-display').textContent = size > 0 ? fmt(commOpen, 4) + ' USDT' : '— USDT';
+  document.getElementById('comm-open').textContent = fmt(commOpen, 4);
+  document.getElementById('comm-close').textContent = fmt(commClose, 4);
+  document.getElementById('comm-total').textContent = fmt(commTotal, 4);
+}
+
+// ── SLIDER ─────────────────────────────────────────────────────────────────────
+function setSlider(pct) {
+  sliderPct = pct;
+  const slider = document.getElementById('size-slider');
+  slider.value = pct;
+  slider.style.background = `linear-gradient(to right, var(--yellow) 0%, var(--yellow) ${pct}%, var(--border2) ${pct}%, var(--border2) 100%)`;
+  document.getElementById('slider-pct-label').textContent = pct + '%';
+  let size = 0;
+  if (reduceOnly) {
+    // Slider, son aktif butona göre değil; her iki taraftaki toplam pozisyon büyüklüğüne göre çalışır.
+    // Buy btn = "KAPAT SHORT" (Long tarafı tıklanırsa Short kapanır)
+    // Sell btn = "KAPAT LONG"  (Short tarafı tıklanırsa Long kapanır)
+    // Slider'ı hesaplamak için hangi butonun son kullanıldığını bilmiyoruz;
+    // bu yüzden mevcut coin'deki ilk pozisyonu baz alıyoruz.
+    const anyPos = positions.find(p => p.symbol === coin);
+    if (anyPos) size = anyPos.size * (pct / 100);
+  } else if (livePrice > 0) {
+    const price = parseFloat(document.getElementById('price-inp').value) || livePrice;
+    const costPerUnit = price * (1 / leverage + COMMISSION_RATE);
+    size = (walletBalance * (pct / 100) * 0.9999) / costPerUnit;
+  }
+  document.getElementById('size-inp').value = size > 0 ? size.toFixed(coinDecimals[coin] + 2) : '';
+  updateCostDisplay();
+}
+
+// ── ORDER TYPE ─────────────────────────────────────────────────────────────────
+function setOrderType(type, btn) {
+  orderType = type;
+  document.querySelectorAll('.ot-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const pg = document.getElementById('price-group');
+  const sg = document.getElementById('stop-group');
+  if (type === 'Market') {
+    pg.style.opacity = '.35'; pg.style.pointerEvents = 'none';
+    sg.style.display = 'none';
+    document.getElementById('reduce-only-wrap').style.display = 'none';
+    document.getElementById('price-inp').value = livePrice ? livePrice.toFixed(coinDecimals[coin]) : '';
+    reduceOnly = false;
+    document.querySelector('.buy-btn').textContent = 'AL/UZUN';
+    document.querySelector('.sell-btn').textContent = 'SAT/KISA';
+  } else if (type === 'StopLimit') {
+    pg.style.opacity = '1'; pg.style.pointerEvents = '';
+    sg.style.display = 'flex';
+    document.getElementById('reduce-only-wrap').style.display = 'flex';
+  } else {
+    pg.style.opacity = '1'; pg.style.pointerEvents = '';
+    sg.style.display = 'none';
+    document.getElementById('reduce-only-wrap').style.display = 'none';
+    reduceOnly = false;
+    document.querySelector('.buy-btn').textContent = 'AL/UZUN';
+    document.querySelector('.sell-btn').textContent = 'SAT/KISA';
+  }
+}
+
+function toggleMargin() {
+  const hasPos = positions.some(p => p.symbol === coin);
+  if (hasPos) {
+    toast(`${coin} pozisyonu açıkken marjin modu değiştirilemez`, 'error');
+    return;
+  }
+  tempMargin = marginMode;
+  document.getElementById('opt-isolated').classList.toggle('selected', tempMargin === 'İzole');
+  document.getElementById('opt-cross').classList.toggle('selected', tempMargin === 'Çapraz');
+  document.getElementById('margin-modal').classList.add('open');
+}
+let tempMargin = 'İzole';
+function selectMargin(mode) {
+  tempMargin = mode;
+  document.getElementById('opt-isolated').classList.toggle('selected', mode === 'İzole');
+  document.getElementById('opt-cross').classList.toggle('selected', mode === 'Çapraz');
+}
+function closeMarginModal() { document.getElementById('margin-modal').classList.remove('open'); }
+function confirmMargin() {
+  marginMode = tempMargin;
+  marginMap[coin] = marginMode;
+  document.getElementById('margin-btn').textContent = marginMode;
+  closeMarginModal();
+  toast(`Marjin modu: ${marginMode}`, 'success');
+}
+
+// ── BALANCE MODAL ──────────────────────────────────────────────────────────────
+function openBalModal() {
+  document.getElementById('bal-current').textContent = fmt(walletBalance, 2);
+  document.getElementById('bal-inp').value = Math.round(walletBalance);
+  document.getElementById('bal-modal').classList.add('open');
+  setTimeout(() => document.getElementById('bal-inp').select(), 50);
+}
+function closeBalModal() { document.getElementById('bal-modal').classList.remove('open'); }
+function setBalQuick(v) { document.getElementById('bal-inp').value = v; }
+function confirmBal() {
+  const v = parseFloat(document.getElementById('bal-inp').value);
+  if (!v || v <= 0) { toast('Geçerli bir miktar girin', 'error'); return; }
+  walletBalance = v;
+  document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT ✎';
+  closeBalModal();
+  toast(`Bakiye ${fmt(v, 2)} USDT olarak ayarlandı`, 'success');
+}
+
+
+function openLevModal() {
+  const hasPos = positions.some(p => p.symbol === coin);
+  if (hasPos) {
+    toast(`${coin} pozisyonu açıkken kaldıraç değiştirilemez`, 'error');
+    return;
+  }
+  tempLev = leverage;
+  document.getElementById('lev-modal').classList.add('open');
+  syncLevUI();
+}
+function closeLevModal() { document.getElementById('lev-modal').classList.remove('open'); }
+function adjLev(d) { tempLev = Math.min(maxLevForCoin(coin), Math.max(1, tempLev + d)); syncLevUI(); }
+function syncLev(v) { tempLev = Math.min(maxLevForCoin(coin), Math.max(1, parseInt(v))); syncLevUI(); }
+function syncLevUI() {
+  const maxLev = maxLevForCoin(coin);
+  if (tempLev > maxLev) tempLev = maxLev;
+  document.getElementById('lev-modal-val').textContent = tempLev;
+  const range = document.getElementById('lev-range');
+  range.max = maxLev;
+  range.value = tempLev;
+  const pct = ((tempLev - 1) / (maxLev - 1)) * 100;
+  range.style.background = `linear-gradient(to right, var(--yellow) 0%, var(--yellow) ${pct}%, var(--border2) ${pct}%, var(--border2) 100%)`;
+  // Tüm işaretleri dinamik güncelle
+  const marks = document.getElementById('lev-marks');
+  if (marks) {
+    const steps = 5;
+    marks.innerHTML = Array.from({length: steps + 1}, (_, i) => {
+      const v = i === 0 ? 1 : Math.round((maxLev / steps) * i);
+      return `<span style="cursor:pointer" onclick="syncLev(${v});syncLevUI()">${v}x</span>`;
+    }).join('');
+  }
+}
+function confirmLev() {
+  leverage = Math.min(tempLev, maxLevForCoin(coin));
+  leverageMap[coin] = leverage;
+  document.getElementById('lev-btn').textContent = leverage + 'x';
+  closeLevModal();
+  toast(`${coin} kaldıracı ${leverage}x olarak ayarlandı`, 'success');
+}
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── FUNDING COUNTDOWN ──────────────────────────────────────────────────────────
+function startFunding() {
+  setInterval(() => {
+    const now = new Date();
+    const h = now.getUTCHours();
+    const nextH = Math.ceil((h + 0.0001) / 8) * 8;
+    const target = new Date(now);
+    target.setUTCHours(nextH, 0, 0, 0);
+    const diff = target - now;
+    const hh = Math.floor(diff / 3600000).toString().padStart(2, '0');
+    const mm = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+    const ss = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+    document.getElementById('funding-cd').textContent = `0.0100% / ${hh}:${mm}:${ss}`;
+  }, 1000);
+}
+
+// ── INPUT LISTENERS ────────────────────────────────────────────────────────────
+document.getElementById('size-inp').addEventListener('input', updateCostDisplay);
+document.getElementById('price-inp').addEventListener('input', updateCostDisplay);
+document.getElementById('bal-inp').addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmBal(); });
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Market dropdown: click to toggle, click outside to close
+  const pairWrap = document.querySelector('.pair-wrap');
+  const mdd = document.querySelector('.market-dropdown');
+  pairWrap.querySelector('.pair-name').addEventListener('click', (e) => {
+    e.stopPropagation();
+    mdd.classList.toggle('open');
+  });
+  document.addEventListener('click', () => mdd.classList.remove('open'));
+
+  document.getElementById('lev-modal').addEventListener('click', (e) => { if (e.target === document.getElementById('lev-modal')) closeLevModal(); });
+  document.getElementById('margin-modal').addEventListener('click', (e) => { if (e.target === document.getElementById('margin-modal')) closeMarginModal(); });
+  document.getElementById('bal-modal').addEventListener('click', (e) => { if (e.target === document.getElementById('bal-modal')) closeBalModal(); });
+
+  renderMarkets();
+  startFunding();
+  renderPositions();
+  renderPendingOrders();
+  changeCoin('BTC');
+  document.getElementById('pos-empty').style.display = 'flex';
+  document.getElementById('ord-empty').style.display = 'flex';
+
+  // Commission tooltip
+  const commLabel = document.getElementById('comm-label');
+  commLabel.addEventListener('mouseenter', () => document.getElementById('comm-tooltip').style.display = 'block');
+  commLabel.addEventListener('mouseleave', () => document.getElementById('comm-tooltip').style.display = 'none');
+});
+</script>
+</body>
+</html>
