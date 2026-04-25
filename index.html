@@ -386,7 +386,7 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 /* ── ÇOK KÜÇÜK MOBİL (≤400px) ── */
 @media(max-width:400px){
   .ticker{gap:6px;padding:6px 8px}
-  .mob-ticker-row .tstat:nth-child(n+3){display:none}
+  .mob-ticker-row .tstat:nth-child(2){display:none}
   .price-live{font-size:14px}
 }
 
@@ -947,6 +947,41 @@ let sliderPct = 0;
 let lastPriceDirection = 1;
 let reduceOnly = false;
 
+// ── KALICI DURUM (localStorage) ───────────────────────────────────────────────
+const STORAGE_KEY = 'pxelight_state_v1';
+
+function saveState() {
+  try {
+    const state = {
+      walletBalance,
+      positions,
+      pendingOrders,
+      leverage,
+      leverageMap,
+      marginMode,
+      marginMap,
+      coin,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (typeof s.walletBalance === 'number' && s.walletBalance > 0) walletBalance = s.walletBalance;
+    if (Array.isArray(s.positions)) positions = s.positions;
+    if (Array.isArray(s.pendingOrders)) pendingOrders = s.pendingOrders;
+    if (typeof s.leverage === 'number') leverage = s.leverage;
+    if (s.leverageMap && typeof s.leverageMap === 'object') leverageMap = s.leverageMap;
+    if (typeof s.marginMode === 'string') marginMode = s.marginMode;
+    if (s.marginMap && typeof s.marginMap === 'object') marginMap = s.marginMap;
+    if (typeof s.coin === 'string' && COINS.includes(s.coin)) coin = s.coin;
+  } catch(e) {}
+}
+
 function toggleReduceOnly() {
   reduceOnly = !reduceOnly;
   const box = document.getElementById('reduce-only-box');
@@ -1002,6 +1037,9 @@ function setSlider(pct) {
 const COINS = ['BTC','ETH','SOL','XRP','BNB','LINK','ADA','AVAX','DOT','DOGE','LTC','ETC','FIL','NEAR'];
 const coinDecimals = {BTC:2,ETH:2,SOL:3,XRP:4,BNB:2,LINK:3,ADA:4,AVAX:3,DOT:3,DOGE:4,LTC:2,ETC:2,FIL:3,NEAR:3};
 const coinMinSizes = {BTC:0.001,ETH:0.01,SOL:0.1,XRP:1,BNB:0.01,LINK:0.1,ADA:1,AVAX:0.1,DOT:0.1,DOGE:1,LTC:0.01,ETC:0.1,FIL:0.1,NEAR:0.1};
+
+// Kaydedilmiş durumu yükle (sayfa yenilendiğinde sıfırlanmasın)
+loadState();
 
 // ── WEBSOCKET ──────────────────────────────────────────────────────────────────
 function connectWS(symbol) {
@@ -1329,6 +1367,7 @@ function placeTrade(side) {
       } else {
         pendingOrders.push({ id: Date.now(), symbol: coin, side, price: priceInput, size: clampedSize, margin: 0, lev: leverage, mode: marginMode, reduceOnly: true, closingId: targetPos.id, closingPos: closingSide, orderEntryPrice: livePrice });
         renderPendingOrders();
+        saveState();
         toast(`Limit Yalnızca Azalt verildi — ${closingSide} ${fmt(clampedSize, coinDecimals[coin] + 2)} ${coin}`, 'success');
       }
     } else {
@@ -1351,6 +1390,7 @@ function placeTrade(side) {
       walletBalance -= cost;
       pendingOrders.push({ id: Date.now(), symbol: coin, side, price: priceInput, size, margin: cost, lev: leverage, mode: marginMode });
       renderPendingOrders();
+      saveState();
       toast(`${side === 'Long' ? 'Long' : 'Short'} Limit emir verildi: ${fmt(priceInput, coinDecimals[coin])} USDT`, 'success');
     }
     }
@@ -1381,6 +1421,7 @@ function placeTrade(side) {
         closingPos: closingSide, isTP: isTPOrder
       });
       renderPendingOrders();
+      saveState();
       const label = isTPOrder ? 'TP' : 'SL';
       toast(`Stop-Limit ${label} verildi — Stop: ${fmt(stopPrice, coinDecimals[coin])} → Limit: ${fmt(priceInput, coinDecimals[coin])}`, 'success');
     } else {
@@ -1396,6 +1437,7 @@ function placeTrade(side) {
         lev: leverage, mode: marginMode, reduceOnly: false
       });
       renderPendingOrders();
+      saveState();
       toast(`Stop-Limit verildi — Stop: ${fmt(stopPrice, coinDecimals[coin])} → Limit: ${fmt(priceInput, coinDecimals[coin])}`, 'success');
     }
   }
@@ -1450,6 +1492,7 @@ function openPosition(side, entry, size, symOverride, levOverride, modeOverride,
         : existing.entry * (1 + 1 / existing.lev * 0.9);
     }
     renderPositions();
+    saveState();
     toast(`${side === 'Long' ? 'Long' : 'Short'} eklendi @ ${fmt(entry, coinDecimals[sym] || 2)} · Ort. Giriş: ${fmt(existing.entry, coinDecimals[sym] || 2)} · Komisyon: ${fmt(commission, 2)} USDT`, 'success');
     return;
   }
@@ -1457,6 +1500,7 @@ function openPosition(side, entry, size, symOverride, levOverride, modeOverride,
   positions.push({ id: Date.now(), symbol: sym, side, entry, size, lev, mode, margin: cost, pnl: 0, liq: liqPrice });
   ensureBgWS(sym);
   renderPositions();
+  saveState();
   toast(`${side === 'Long' ? 'Long' : 'Short'} açıldı @ ${fmt(entry, coinDecimals[sym] || 2)} · Komisyon: ${fmt(commission, 2)} USDT`, 'success');
 }
 
@@ -1474,6 +1518,7 @@ function closePos(id, partialSize) {
     p.size = parseFloat((p.size - partialSize).toFixed(8));
     p.margin -= partialMargin;
     renderPositions();
+    saveState();
     toast(`Kısmi kapanış: ${realizedPnl >= 0 ? '+' : ''}${fmt(realizedPnl, 2)} USDT · Komisyon: ${fmt(commission, 2)} USDT`, realizedPnl >= 0 ? 'success' : 'error');
     return;
   }
@@ -1483,6 +1528,7 @@ function closePos(id, partialSize) {
   positions = positions.filter(x => x.id !== id);
   cleanBgWS();
   renderPositions();
+  saveState();
   toast(`Pozisyon kapatıldı: ${realizedPnl >= 0 ? '+' : ''}${fmt(realizedPnl, 2)} USDT · Komisyon: ${fmt(commission, 2)} USDT`, realizedPnl >= 0 ? 'success' : 'error');
 }
 
@@ -1491,6 +1537,7 @@ function cancelOrder(id) {
   if (o) walletBalance += o.margin;
   pendingOrders = pendingOrders.filter(x => x.id !== id);
   renderPendingOrders();
+  saveState();
   toast('Emir iptal edildi', 'warn');
 }
 
@@ -1591,6 +1638,7 @@ function checkPendingOrders() {
   if (filled.length || changed) {
     pendingOrders = pendingOrders.filter(o => !filled.includes(o.id));
     renderPendingOrders();
+    saveState();
   }
 }
 
@@ -1773,6 +1821,7 @@ function confirmMargin() {
   marginMap[coin] = marginMode;
   document.getElementById('margin-btn').textContent = marginMode;
   closeMarginModal();
+  saveState();
   toast(`Marjin modu: ${marginMode}`, 'success');
 }
 
@@ -1791,6 +1840,7 @@ function confirmBal() {
   walletBalance = v;
   document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT ✎';
   closeBalModal();
+  saveState();
   toast(`Bakiye ${fmt(v, 2)} USDT olarak ayarlandı`, 'success');
 }
 
@@ -1832,6 +1882,7 @@ function confirmLev() {
   leverageMap[coin] = leverage;
   document.getElementById('lev-btn').textContent = leverage + 'x';
   closeLevModal();
+  saveState();
   toast(`${coin} kaldıracı ${leverage}x olarak ayarlandı`, 'success');
 }
 function showTab(id, btn) {
@@ -1912,16 +1963,8 @@ function startFunding() {
 // ── VERİ YENİLEME ────────────────────────────────────────────────────────────
 function refreshData() {
   const btn = document.getElementById('refresh-btn');
-  if (btn) {
-    btn.classList.add('spinning');
-    setTimeout(() => btn.classList.remove('spinning'), 520);
-  }
-  // WebSocket yeniden bağlan
-  connectWS(coin);
-  // Funding rate yenile
-  fetchFundingRate(coin);
-  // Market dropdown yenile
-  renderMarkets();
+  if (btn) btn.classList.add('spinning');
+  setTimeout(() => location.reload(), 300);
 }
 
 // ── LEGAL MODALS ─────────────────────────────────────────────────────────────
@@ -1982,9 +2025,13 @@ document.addEventListener('DOMContentLoaded', () => {
   startFunding();
   renderPositions();
   renderPendingOrders();
-  changeCoin('BTC');
-  document.getElementById('pos-empty').style.display = 'flex';
-  document.getElementById('ord-empty').style.display = 'flex';
+  // Kaydedilmiş durumu UI'a yansıt
+  document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT ✎';
+  document.getElementById('lev-btn').textContent = leverage + 'x';
+  document.getElementById('margin-btn').textContent = marginMode;
+  changeCoin(coin);
+  document.getElementById('pos-empty').style.display = positions.length === 0 ? 'flex' : 'none';
+  document.getElementById('ord-empty').style.display = pendingOrders.length === 0 ? 'flex' : 'none';
 
   // Commission tooltip
   const commLabel = document.getElementById('comm-label');
