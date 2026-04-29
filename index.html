@@ -91,7 +91,8 @@
   --font-display: 'Syne', sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;outline:none}
-body{background:var(--bg);color:var(--text);font-family:var(--font-mono);font-size:12px;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+html{height:100%;height:100dvh;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-mono);font-size:12px;height:100%;height:100dvh;overflow:hidden;display:flex;flex-direction:column;position:fixed;width:100%;top:0;left:0}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
 /* ── SPLASH ── */
@@ -308,7 +309,7 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 
 /* ── MOBİL (≤768px) ── */
 @media(max-width:768px){
-  body{overflow:hidden;height:100dvh;touch-action:pan-x pan-y}
+  body{overflow:hidden;height:100%;height:100dvh;touch-action:pan-x pan-y}
 
   /* Header küçültme */
   header{height:44px;padding:0 12px}
@@ -437,9 +438,9 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 
 /* Genel Taşma Engelleme */
 html, body {
-    overflow-x: hidden;
+    overflow: hidden;
     width: 100%;
-    position: relative;
+    max-width: 100%;
 }
 </style>
 </head>
