@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gizlilik Politikası – Pxelight Futures</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230d0f12'/%3E%3Cg transform='translate(256,256)'%3E%3Cpolygon points='0,-110 95,-55 95,55 0,110 -95,55 -95,-55' fill='none' stroke='%23f0b90b' stroke-width='22'/%3E%3Cpolygon points='0,-62 54,-31 54,31 0,62 -54,31 -54,-31' fill='%23f0b90b' opacity='.25'/%3E%3Cline x1='0' y1='-110' x2='0' y2='-62' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='0' y1='62' x2='0' y2='110' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='-55' x2='54' y2='-31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='-31' x2='-95' y2='-55' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='55' x2='54' y2='31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='31' x2='-95' y2='55' stroke='%23f0b90b' stroke-width='14'/%3E%3C/g%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230d0f12'/%3E%3Cg transform='translate(256,256)'%3E%3Cpolygon points='0,-110 95,-55 95,55 0,110 -95,55 -95,-55' fill='none' stroke='%23f0b90b' stroke-width='22'/%3E%3Cpolygon points='0,-62 54,-31 54,31 0,62 -54,31 -54,-31' fill='%23f0b90b' opacity='.25'/%3E%3Cline x1='0' y1='-110' x2='0' y2='-62' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='0' y1='62' x2='0' y2='110' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='-55' x2='54' y2='-31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='-31' x2='-95' y2='-55' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='95' y1='55' x2='54' y2='31' stroke='%23f0b90b' stroke-width='14'/%3E%3Cline x1='-54' y1='31' x2='-95' y2='55' stroke='%23f0b90b' stroke-width='14'/%3E%3C/g%3E%3C/svg%3E">
-<meta name="description" content="Pxelight Futures gizlilik politikası. Verilerinizin nasıl saklandığı, üçüncü taraf hizmetler ve reklam politikası hakkında bilgi.">
+<meta name="description" content="Pxelight Futures gizlilik politikası.">
 <meta name="robots" content="index, follow">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -17,6 +16,7 @@
   --font-mono:'JetBrains Mono',monospace;--font-display:'Syne',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
+html,body{overflow-x:hidden;width:100%;}
 body{background:var(--bg);color:var(--text);font-family:var(--font-mono);font-size:13px;min-height:100vh;display:flex;flex-direction:column;}
 
 nav.topnav{height:52px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:100;}
@@ -25,7 +25,7 @@ nav.topnav{height:52px;background:var(--panel);border-bottom:1px solid var(--bor
 .nav-logo em{color:var(--muted2);font-style:normal;font-weight:500;font-size:13px;}
 .nav-links{display:flex;gap:24px;align-items:center;}
 .nav-links a{color:var(--muted2);text-decoration:none;font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;transition:color .15s;}
-.nav-links a:hover{color:var(--yellow);}
+.nav-links a:hover,.nav-links a.active{color:var(--yellow);}
 
 .hero{background:linear-gradient(135deg,#0d0f12 0%,#13161b 60%,#0d0f1a 100%);border-bottom:1px solid var(--border);padding:60px 32px 48px;}
 .hero-inner{max-width:760px;margin:0 auto;}
@@ -51,12 +51,22 @@ footer .flinks{display:flex;gap:16px;}
 footer .flinks a{font-size:10px;color:var(--muted2);text-decoration:none;transition:color .15s;}
 footer .flinks a:hover{color:var(--yellow);}
 
+/* MOBİL ALT NAV */
+.mob-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:52px;background:var(--panel);border-top:1px solid var(--border);z-index:500;}
+.mob-bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted2);text-decoration:none;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;border-top:2px solid transparent;transition:color .15s;}
+.mob-bottom-nav a.active{color:var(--yellow);border-top-color:var(--yellow);}
+.mob-bottom-nav a:hover{color:var(--yellow);}
+.mob-bottom-nav .mnav-icon{font-size:16px;line-height:1;}
+
 @media(max-width:768px){
   nav.topnav{padding:0 16px;}
-  .hero{padding:36px 16px 28px;}
-  .hero h1{font-size:24px;}
-  .content{padding:28px 16px;}
-  footer{padding:16px;}
+  .nav-links{display:none;}
+  .hero{padding:28px 16px 24px;}
+  .hero h1{font-size:22px;}
+  .content{padding:20px 16px 72px;}
+  .doc-section h2{font-size:13px;}
+  footer{display:none;}
+  .mob-bottom-nav{display:flex;}
 }
 </style>
 </head>
@@ -68,14 +78,14 @@ footer .flinks a:hover{color:var(--yellow);}
     <a href="/">Simülatör</a>
     <a href="/education/">Eğitim</a>
     <a href="/faq/">SSS</a>
-    <a href="/privacy/">Gizlilik</a>
+    <a href="/privacy/" class="active">Gizlilik</a>
     <a href="/about/">Hakkımızda</a>
   </div>
 </nav>
 
 <div class="hero">
   <div class="hero-inner">
-    <div class="hero-badge"> Gizlilik</div>
+    <div class="hero-badge">Gizlilik</div>
     <h1>Gizlilik Politikası</h1>
     <div class="date">Son güncelleme: Nisan 2026</div>
   </div>
@@ -108,9 +118,9 @@ footer .flinks a:hover{color:var(--yellow);}
     <h2>Üçüncü Taraf Hizmetleri</h2>
     <p>Platform, temel işlevleri için aşağıdaki üçüncü taraf hizmetlerden yararlanmaktadır:</p>
     <ul>
-      <li><strong>Bybit WebSocket API:</strong> Gerçek zamanlı kripto para fiyat verileri için kullanılır. Bybit'in kendi gizlilik politikası geçerlidir.</li>
-      <li><strong>TradingView:</strong> Grafik gösterimi için kullanılır. TradingView'ın gizlilik politikası geçerlidir.</li>
-      <li><strong>Google AdSense:</strong> Platformun ücretsiz sunulmasını desteklemek amacıyla reklam gösterimi yapılabilir. Google'ın gizlilik politikası geçerlidir.</li>
+      <li><strong>Bybit WebSocket API:</strong> Gerçek zamanlı kripto para fiyat verileri için kullanılır.</li>
+      <li><strong>TradingView:</strong> Grafik gösterimi için kullanılır.</li>
+      <li><strong>Google AdSense:</strong> Platformun ücretsiz sunulmasını desteklemek amacıyla reklam gösterimi yapılabilir.</li>
       <li><strong>Google Fonts:</strong> Yazı tiplerinin yüklenmesi için kullanılır.</li>
     </ul>
   </div>
@@ -120,24 +130,24 @@ footer .flinks a:hover{color:var(--yellow);}
     <p>Bu site Google AdSense aracılığıyla reklam gösterebilir. Google, reklam kişiselleştirmesi amacıyla çerez (cookie) kullanabilir.</p>
     <p>Reklam kişiselleştirmesini devre dışı bırakmak için <a href="https://adssettings.google.com" target="_blank">Google Reklam Ayarları</a> sayfasını ziyaret edebilirsiniz.</p>
     <div class="highlight">
-      <strong>Not:</strong> Pxelight Futures, reklam gelirlerini platformu ücretsiz ve reklamsız tutmak için değil, geliştirme ve barındırma maliyetlerini karşılamak amacıyla kullanmaktadır. Reklamlar asla kullanıcı deneyiminin önüne geçirilmez.
+      <strong>Not:</strong> Reklamlar geliştirme ve barındırma maliyetlerini karşılamak amacıyla kullanılmaktadır. Reklamlar asla kullanıcı deneyiminin önüne geçirilmez.
     </div>
   </div>
 
   <div class="doc-section">
     <h2>Çerezler (Cookies)</h2>
-    <p>Platform, kendi işlevleri için çerez kullanmamaktadır. Ancak Google AdSense ve TradingView gibi üçüncü taraf hizmetler kendi çerezlerini kullanabilir. Bu çerezler ilgili hizmetlerin politikaları kapsamındadır.</p>
+    <p>Platform, kendi işlevleri için çerez kullanmamaktadır. Ancak Google AdSense ve TradingView gibi üçüncü taraf hizmetler kendi çerezlerini kullanabilir.</p>
   </div>
 
   <div class="doc-section">
     <h2>Veri Güvenliği</h2>
-    <p>Tüm simülasyon verileriniz tarayıcınızda şifrelenmiş biçimde değil, yerel depolama alanında saklanır. Bu nedenle paylaşılan cihazlarda dikkatli olmanızı öneririz.</p>
+    <p>Tüm simülasyon verileriniz tarayıcınızda yerel depolama alanında saklanır. Paylaşılan cihazlarda dikkatli olmanızı öneririz.</p>
     <p>Verilerinizi tamamen silmek için tarayıcınızın geliştirici araçlarından localStorage temizleyebilir veya tarayıcı önbelleğini silebilirsiniz.</p>
   </div>
 
   <div class="doc-section">
     <h2>Değişiklikler</h2>
-    <p>Bu gizlilik politikası gerektiğinde güncellenebilir. Önemli değişiklikler bu sayfada duyurulur. Platformu kullanmaya devam ederek güncel politikayı kabul etmiş sayılırsınız.</p>
+    <p>Bu gizlilik politikası gerektiğinde güncellenebilir. Platformu kullanmaya devam ederek güncel politikayı kabul etmiş sayılırsınız.</p>
   </div>
 
   <div class="doc-section">
@@ -157,6 +167,14 @@ footer .flinks a:hover{color:var(--yellow);}
     <a href="/about/">Hakkımızda</a>
   </div>
 </footer>
+
+<nav class="mob-bottom-nav">
+  <a href="/"><span class="mnav-icon">◱</span>Simülatör</a>
+  <a href="/education/"><span class="mnav-icon">ƒ</span>Eğitim</a>
+  <a href="/faq/"><span class="mnav-icon">�</span>SSS</a>
+  <a href="/privacy/" class="active"><span class="mnav-icon">ꗃ</span>Gizlilik</a>
+  <a href="/about/"><span class="mnav-icon">🛈</span>Hakkımızda</a>
+</nav>
 
 </body>
 </html>
