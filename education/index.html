@@ -17,9 +17,10 @@
   --font-mono:'JetBrains Mono',monospace;--font-display:'Syne',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
+html,body{overflow-x:hidden;width:100%;}
 body{background:var(--bg);color:var(--text);font-family:var(--font-mono);font-size:13px;min-height:100vh;display:flex;flex-direction:column;}
 
-/* NAVI */
+/* NAV */
 nav.topnav{height:52px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:100;}
 .nav-logo{font-family:var(--font-display);font-size:17px;font-weight:800;letter-spacing:-.5px;text-decoration:none;}
 .nav-logo span{color:var(--yellow)}
@@ -87,13 +88,24 @@ footer .flinks{display:flex;gap:16px;}
 footer .flinks a{font-size:10px;color:var(--muted2);text-decoration:none;transition:color .15s;}
 footer .flinks a:hover{color:var(--yellow);}
 
+/* MOBİL ALT NAV */
+.mob-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:52px;background:var(--panel);border-top:1px solid var(--border);z-index:500;}
+.mob-bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--muted2);text-decoration:none;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;border-top:2px solid transparent;transition:color .15s;}
+.mob-bottom-nav a.active{color:var(--yellow);border-top-color:var(--yellow);}
+.mob-bottom-nav a:hover{color:var(--yellow);}
+.mob-bottom-nav .mnav-icon{font-size:16px;line-height:1;}
+
 @media(max-width:768px){
   nav.topnav{padding:0 16px;}
-  .hero{padding:36px 16px 32px;}
-  .hero h1{font-size:26px;}
-  .content{padding:32px 16px;}
+  .nav-links{display:none;}
+  .hero{padding:28px 16px 24px;}
+  .hero h1{font-size:22px;}
+  .hero p{font-size:12px;}
+  .content{padding:20px 16px 72px;}
   .articles-grid{grid-template-columns:1fr;}
-  footer{padding:16px;}
+  .article-header h2{font-size:22px;}
+  footer{display:none;}
+  .mob-bottom-nav{display:flex;}
 }
 </style>
 </head>
@@ -394,6 +406,14 @@ footer .flinks a:hover{color:var(--yellow);}
     <a href="/about/">Hakkımızda</a>
   </div>
 </footer>
+
+<nav class="mob-bottom-nav">
+  <a href="/"><span class="mnav-icon">◱</span>Simülatör</a>
+  <a href="/education/" class="active"><span class="mnav-icon">ƒ</span>Eğitim</a>
+  <a href="/faq/"><span class="mnav-icon">�</span>SSS</a>
+  <a href="/privacy/"><span class="mnav-icon">ꗃ</span>Gizlilik</a>
+  <a href="/about/"><span class="mnav-icon">🛈</span>Hakkımızda</a>
+</nav>
 
 <script>
 function showArticle(id) {
