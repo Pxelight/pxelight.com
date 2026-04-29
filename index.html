@@ -424,12 +424,16 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 .legal-modal-body p{margin-bottom:10px}
 .legal-modal-body ul{margin:6px 0 10px 18px}
 .legal-modal-body li{margin-bottom:4px}
-/* Info modal sekme navigasyonu */
-.info-modal-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0}
-.info-tab-btn{flex:1;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted2);font-family:var(--font-mono);font-size:10px;font-weight:600;padding:10px 4px;cursor:pointer;transition:all .15s;margin-bottom:-1px;text-transform:uppercase;letter-spacing:.3px}
-.info-tab-btn.active{color:var(--yellow);border-bottom-color:var(--yellow)}
-.info-tab-pane{display:none}
-.info-tab-pane.active{display:block}
+/* ── INFO MENU MODAL ── */
+.info-menu-body{padding:16px!important}
+.info-menu-card{display:flex;align-items:center;gap:14px;background:var(--panel2);border:1px solid var(--border2);border-radius:8px;padding:16px;margin-bottom:10px;text-decoration:none;color:var(--text);transition:border-color .15s,background .15s}
+.info-menu-card:hover{border-color:var(--yellow);background:rgba(240,185,11,.04)}
+.info-menu-icon{font-size:22px;flex-shrink:0;width:36px;text-align:center}
+.info-menu-text{flex:1;min-width:0}
+.info-menu-title{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.info-menu-desc{font-size:11px;color:var(--muted2);line-height:1.4}
+.info-menu-arrow{color:var(--yellow);font-size:20px;font-weight:700;flex-shrink:0}
+.info-menu-disclaimer{margin-top:16px;padding:12px 14px;background:rgba(255,154,0,.06);border:1px solid rgba(255,154,0,.2);border-radius:6px;font-size:11px;color:var(--muted2);line-height:1.6}
 
 /* Genel Taşma Engelleme */
 html, body {
@@ -440,7 +444,7 @@ html, body {
 </style>
 </head>
 <body>
-<!-- MAIN FILE -->
+
 <!-- SPLASH SCREEN -->
 <div id="splash">
   <div class="splash-logo-wrap">
@@ -853,79 +857,44 @@ html, body {
 <div class="legal-modal-bg" id="modal-info">
   <div class="legal-modal-box">
     <div class="legal-modal-head">
-      <h2>Bilgi &amp; Yasal</h2>
+      <h2>Menü</h2>
       <span class="modal-close" onclick="closeInfoModal()">×</span>
     </div>
-    <div class="info-modal-tabs">
-      <button class="info-tab-btn active" onclick="switchInfoTab('about',this)">Hakkımızda</button>
-      <button class="info-tab-btn" onclick="switchInfoTab('disclaimer',this)">Yasal Uyarı</button>
-      <button class="info-tab-btn" onclick="switchInfoTab('privacy',this)">Gizlilik</button>
-      <button class="info-tab-btn" onclick="switchInfoTab('contact',this)">İletişim</button>
-    </div>
-    <div class="legal-modal-body">
-      <!-- HAKKIMIZDA -->
-      <div class="info-tab-pane active" id="itab-about">
-        <h3>Pxelight Futures Nedir?</h3>
-        <p>Pxelight Futures, kripto para vadeli işlemlerini (futures) gerçek piyasa koşullarını simüle ederek öğrenmenize olanak tanıyan ücretsiz bir eğitim platformudur. Gerçek para yatırmanıza gerek kalmadan kaldıraçlı işlemleri, emir defterini ve risk yönetimini deneyimleyebilirsiniz.</p>
-        <h3>Ne Sunuyoruz?</h3>
-        <ul>
-          <li>Gerçek zamanlı Bybit verileriyle BTC, ETH ve diğer kripto çiftleri</li>
-          <li>Limit, Market ve Stop-Limit emir türleri</li>
-          <li>1x'ten 150x'e kaldıraç desteği</li>
-          <li>İzole ve Çapraz marjin modları</li>
-          <li>Canlı emir defteri ve TradingView grafik entegrasyonu</li>
-          <li>Komisyon hesaplama ve likidasyon simülasyonu</li>
-        </ul>
-        <h3>Hedef Kitle</h3>
-        <p>Kripto piyasalarına yeni başlayan bireyler, kaldıraçlı işlemleri öğrenmek isteyen yatırımcılar ve stratejilerini test etmek isteyen deneyimli traderlar için tasarlanmıştır.</p>
-        <h3>Teknik Altyapı</h3>
-        <p>Platform, Bybit WebSocket ve REST API üzerinden gerçek zamanlı fiyat ve emir defteri verisi çeker. Grafik motoru olarak TradingView kütüphanesi kullanılmaktadır. Tüm işlemler yalnızca tarayıcınızda gerçekleşir; hiçbir kişisel veri sunucularımıza gönderilmez.</p>
-      </div>
-      <!-- YASAL UYARI -->
-      <div class="info-tab-pane" id="itab-disclaimer">
-        <h3>Yatırım Tavsiyesi Değildir</h3>
-        <p>Pxelight Futures platformunda sunulan tüm içerikler, araçlar ve simülasyonlar yalnızca eğitim ve bilgilendirme amaçlıdır. Hiçbir içerik yatırım, finansal, hukuki veya vergi tavsiyesi niteliği taşımaz.</p>
-        <h3>Simülasyon Ortamı</h3>
-        <p>Platform tamamen sanal bir ortamdır. Gerçekleştirilen tüm işlemler simülasyondur; hiçbir gerçek para transferi veya işlemi gerçekleşmez.</p>
-        <h3>Piyasa Riski</h3>
-        <p>Kripto para piyasaları son derece değişkendir ve yüksek risk içerir. Gerçek piyasalarda kaldıraçlı işlemler, yatırdığınız tutarın tamamını veya daha fazlasını kaybetmenize yol açabilir. Gerçek yatırım kararları vermeden önce bir finansal danışmana başvurmanızı şiddetle tavsiye ederiz.</p>
-        <h3>Veri Doğruluğu</h3>
-        <p>Gerçek zamanlı piyasa verileri üçüncü taraf kaynaklardan sağlanmaktadır. Pxelight Futures, veri gecikmelerinden veya yanlışlıklardan kaynaklanan zararlardan sorumlu tutulamaz.</p>
-        <h3>Sorumluluk Sınırlaması</h3>
-        <p>Platformun kullanımından doğan doğrudan veya dolaylı hiçbir zarar için Pxelight Futures ve geliştiricileri sorumlu değildir. Platformu kullanarak bu koşulları kabul etmiş sayılırsınız.</p>
-      </div>
-      <!-- GİZLİLİK -->
-      <div class="info-tab-pane" id="itab-privacy">
-        <p><strong>Son güncelleme:</strong> Nisan 2026</p>
-        <h3>Topladığımız Veriler</h3>
-        <p>Pxelight Futures, kullanıcıların kişisel verilerini toplamaz veya saklamaz. Platform tamamen istemci taraflı çalışır; tüm simülasyon verileri yalnızca tarayıcınızda tutulur.</p>
-        <h3>Çerezler (Cookies)</h3>
-        <p>Platform, temel işlevsellik için yerel depolama (localStorage) kullanabilir. Bu veriler yalnızca kaldıraç ve bakiye gibi tercihlerinizi hatırlamak amacıyla cihazınızda saklanır, hiçbir sunucuya iletilmez.</p>
-        <h3>Üçüncü Taraf Hizmetleri</h3>
-        <ul>
-          <li><strong>Bybit WebSocket API:</strong> Gerçek zamanlı piyasa verisi için kullanılır.</li>
-          <li><strong>TradingView:</strong> Grafik gösterimi için kullanılır.</li>
-          <li><strong>Google AdSense:</strong> Ücretsiz hizmetin sürdürülebilirliği için reklam gösterimi yapılabilir.</li>
-          <li><strong>Google Fonts:</strong> Yazı tipi yükleme amacıyla kullanılır.</li>
-        </ul>
-        <h3>Değişiklikler</h3>
-        <p>Bu gizlilik politikası zaman zaman güncellenebilir. Platformu kullanmaya devam ederek güncel politikayı kabul etmiş sayılırsınız.</p>
-        <h3>İletişim</h3>
-        <p>Gizlilik ile ilgili sorularınız için: <span style="color:var(--yellow)">pxelight@gmail.com</span></p>
-      </div>
-      <!-- İLETİŞİM -->
-      <div class="info-tab-pane" id="itab-contact">
-        <h3>Bize Ulaşın</h3>
-        <p>Pxelight Futures hakkında soru, öneri veya geri bildirimleriniz için aşağıdaki kanalları kullanabilirsiniz.</p>
-        <h3>E-posta</h3>
-        <p>Genel sorular &amp; Teknik destek &amp; Gizlilik:<br><span style="color:var(--yellow)">pxelight@gmail.com</span></p>
-        <h3>Hata Bildirimi</h3>
-        <p>Platform ile ilgili bir hata veya sorun fark ettiyseniz lütfen e-posta ile bildirin. Geri bildirimleriniz platforma katkı sağlar.</p>
-        <h3>Reklam ve İş Birliği</h3>
-        <p>Reklam veya iş birliği teklifleri için: <span style="color:var(--yellow)">pxelight@gmail.com</span></p>
-        <p style="margin-top:16px;padding:12px;background:var(--panel2);border-radius:4px;border-left:3px solid var(--yellow);font-size:11px;color:var(--muted2)">
-          Pxelight Futures bağımsız bir geliştirici projesidir. Herhangi bir kripto borsası veya finansal kurum ile bağlantısı yoktur.
-        </p>
+    <div class="legal-modal-body info-menu-body">
+      <a class="info-menu-card" href="/education/" onclick="closeInfoModal()">
+        <div class="info-menu-icon">ƒ</div>
+        <div class="info-menu-text">
+          <div class="info-menu-title">Eğitim Merkezi</div>
+          <div class="info-menu-desc">Futures, kaldıraç ve risk yönetimi makaleleri</div>
+        </div>
+        <div class="info-menu-arrow">›</div>
+      </a>
+      <a class="info-menu-card" href="/faq/" onclick="closeInfoModal()">
+        <div class="info-menu-icon">�</div>
+        <div class="info-menu-text">
+          <div class="info-menu-title">Sık Sorulan Sorular</div>
+          <div class="info-menu-desc">Simülatör ve platform hakkında merak edilenler</div>
+        </div>
+        <div class="info-menu-arrow">›</div>
+      </a>
+      <a class="info-menu-card" href="/about/" onclick="closeInfoModal()">
+        <div class="info-menu-icon">🛈</div>
+        <div class="info-menu-text">
+          <div class="info-menu-title">Hakkımızda</div>
+          <div class="info-menu-desc">Misyon, platform özellikleri ve iletişim</div>
+        </div>
+        <div class="info-menu-arrow">›</div>
+      </a>
+      <a class="info-menu-card" href="/privacy/" onclick="closeInfoModal()">
+        <div class="info-menu-icon">ꗃ</div>
+        <div class="info-menu-text">
+          <div class="info-menu-title">Gizlilik Politikası</div>
+          <div class="info-menu-desc">Verileriniz nasıl saklanır ve korunur</div>
+        </div>
+        <div class="info-menu-arrow">›</div>
+      </a>
+      <div class="info-menu-disclaimer">
+        🛈 Pxelight Futures yalnızca eğitim amaçlı bir simülatördür. Gerçek para kullanılmaz, yatırım tavsiyesi verilmez.
       </div>
     </div>
   </div>
@@ -1984,30 +1953,15 @@ function closeLegal(page) {
   document.getElementById('modal-' + page).classList.remove('open');
 }
 // Mobil birleşik info modal
-function openInfoModal(tab) {
-  if (tab) switchInfoTab(tab);
+function openInfoModal() {
   document.getElementById('modal-info').classList.add('open');
 }
 function closeInfoModal() {
   document.getElementById('modal-info').classList.remove('open');
 }
-function switchInfoTab(tab, btn) {
-  document.querySelectorAll('.info-tab-pane').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.info-tab-btn').forEach(b => b.classList.remove('active'));
-  const pane = document.getElementById('itab-' + tab);
-  if (pane) pane.classList.add('active');
-  if (btn) btn.classList.add('active');
-  else {
-    const btns = document.querySelectorAll('.info-tab-btn');
-    const tabs = ['about','disclaimer','privacy','contact'];
-    const idx = tabs.indexOf(tab);
-    if (idx >= 0 && btns[idx]) btns[idx].classList.add('active');
-  }
-}
-// Click outside to close legal modals
-['about','disclaimer','privacy','contact'].forEach(id => {
-  const el = document.getElementById('modal-' + id);
-  el.addEventListener('click', (e) => { if (e.target === el) closeLegal(id); });
+// Click outside to close info modal
+document.getElementById('modal-info').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modal-info')) closeInfoModal();
 });
 
 // ── INPUT LISTENERS ────────────────────────────────────────────────────────────
