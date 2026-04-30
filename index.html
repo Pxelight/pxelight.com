@@ -129,7 +129,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   0%{opacity:1;transform:scale(.85)}
   100%{opacity:0;transform:scale(1.3)}
 }
-.splash-name{font-family:var(--font-display);font-size:28px;font-weight:800;letter-spacing:-.5px;color:var(--yellow)}
+.splash-name{font-family:var(--font-mono);font-size:28px;font-weight:800;letter-spacing:-.5px;color:var(--yellow)}
 .splash-sub{font-size:11px;color:var(--muted2);letter-spacing:3px;text-transform:uppercase;font-family:var(--font-mono)}
 .splash-bar-track{width:200px;height:2px;background:var(--border2);border-radius:2px;overflow:hidden}
 .splash-bar{height:100%;width:0%;background:var(--yellow);border-radius:2px;transition:width .1s linear}
@@ -137,7 +137,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 
 /* HEADER */
 header{height:52px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 18px;flex-shrink:0;z-index:100}
-.logo{font-family:var(--font-display);font-size:17px;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:6px}
+.logo{font-family:var(--font-mono);font-size:17px;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:6px}
 .logo-main{color:var(--yellow)}
 .logo-sub{color:var(--muted2);font-weight:500;font-size:13px}
 .header-right{display:flex;align-items:center;gap:16px}
@@ -167,21 +167,21 @@ header{height:52px;background:var(--panel);border-bottom:1px solid var(--border)
 .ticker-top-row{display:contents}
 .mob-ticker-row{display:none}
 .pair-wrap{position:relative;cursor:pointer}
-.pair-name{font-family:var(--font-display);font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
+.pair-name{font-family:var(--font-mono);font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
 .pair-name .sym{color:var(--yellow)}
 .pair-name .sep{color:var(--muted)}
 .perp-badge{background:rgba(240,185,11,.12);color:var(--yellow);font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;letter-spacing:.5px}
 .pair-arrow{color:var(--muted);font-size:10px;margin-left:3px}
 .market-dropdown{display:none;position:absolute;top:46px;left:0;width:260px;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.7);z-index:9999;overflow:hidden}
 .market-dropdown.open{display:block}
-.mdd-header{padding:10px 12px;font-size:11px;color:var(--muted2);border-bottom:1px solid var(--border);font-family:var(--font-display);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.mdd-header{padding:10px 12px;font-size:11px;color:var(--muted2);border-bottom:1px solid var(--border);font-family:var(--font-mono);font-weight:700;letter-spacing:.5px;text-transform:uppercase}
 .mdd-list{max-height:300px;overflow-y:auto}
 .mdd-item{padding:9px 12px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .15s}
 .mdd-item:hover{background:rgba(255,255,255,.04)}
 .mdd-item .coin{font-weight:600;font-size:12px}
 .mdd-item .usdt{color:var(--muted2);font-size:11px}
 .mdd-item .chg{font-size:11px}
-.price-live{font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--green);min-width:130px;transition:color .3s}
+.price-live{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--green);min-width:130px;transition:color .3s}
 .price-live.down{color:var(--red)}
 .ticker-stats{display:flex;gap:24px;flex:1}
 .tstat{display:flex;flex-direction:column;gap:2px}
@@ -215,7 +215,8 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 .pnl-cell{font-weight:600}
 .funding-cell{font-weight:600;font-size:11px}
 
-/* Pozisyon mobil kartlar — varsayılan gizli */
+/* Mobil kolon ticker — varsayılan gizli, sadece mobilde görünür */
+.mob-col-ticker{display:none}
 .pos-mob-row{display:none}
 .pos-desktop-row{display:table-row}
 
@@ -246,7 +247,7 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 
 /* ORDER BOOK */
 .book-col{display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--panel);min-height:0}
-.col-title{padding:12px 12px 8px;font-family:var(--font-display);font-size:12px;font-weight:700;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border);flex-shrink:0}
+.col-title{padding:12px 12px 8px;font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--muted2);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border);flex-shrink:0}
 .book-hdr{display:grid;grid-template-columns:1.4fr 0.9fr 1fr;padding:6px 10px;color:var(--muted);font-size:10px;border-bottom:1px solid var(--border);flex-shrink:0}
 .book-hdr span:not(:first-child){text-align:right}
 .book-rows{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
@@ -258,7 +259,7 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 .book-row .qty-col{color:var(--text) !important;font-size:11px}
 .book-row .total-col{color:var(--muted2) !important;font-size:10px}
 .book-row .bg-fill{position:absolute;right:0;top:0;height:100%;opacity:.08;pointer-events:none}
-.mid-row{padding:10px 12px;text-align:center;font-family:var(--font-display);font-size:16px;font-weight:700;background:var(--panel2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-shrink:0}
+.mid-row{padding:10px 12px;text-align:center;font-family:var(--font-mono);font-size:16px;font-weight:700;background:var(--panel2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);flex-shrink:0}
 .mid-row .spread{font-size:9px;color:var(--muted);margin-left:8px}
 
 /* TRADE PANEL */
@@ -301,13 +302,13 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
 .modal-box{background:#1a1e26;border:1px solid var(--border2);border-radius:8px;width:360px;padding:24px}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font-family:var(--font-display);font-size:15px;font-weight:700}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;font-family:var(--font-mono);font-size:15px;font-weight:700}
 .modal-close{cursor:pointer;font-size:22px;color:var(--muted2);line-height:1}
 .modal-close:hover{color:var(--text)}
 .lev-ctrl{display:flex;align-items:center;background:var(--panel2);border:1px solid var(--border2);border-radius:4px;margin-bottom:24px}
 .lev-ctrl button{width:48px;height:48px;background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;transition:color .15s}
 .lev-ctrl button:hover{color:var(--yellow)}
-.lev-val{flex:1;text-align:center;font-family:var(--font-display);font-size:20px;font-weight:700;border-left:1px solid var(--border2);border-right:1px solid var(--border2)}
+.lev-val{flex:1;text-align:center;font-family:var(--font-mono);font-size:20px;font-weight:700;border-left:1px solid var(--border2);border-right:1px solid var(--border2)}
 .lev-val span{color:var(--muted2);font-size:14px}
 .lev-slider{-webkit-appearance:none;width:100%;height:3px;background:var(--border2);border-radius:3px;outline:none;margin-bottom:8px}
 .lev-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--yellow);border-radius:2px;cursor:pointer;transform:rotate(45deg)}
@@ -377,8 +378,19 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
   .mob-ticker-row .tstat .lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
   .mob-ticker-row .tstat .val{font-size:11px;font-weight:500}
 
+  /* Mobil kolon coin ticker */
+  .mob-col-ticker{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:7px 12px;background:var(--panel);border-bottom:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .mob-col-ticker-left{display:flex;align-items:baseline;gap:8px}
+  .mob-col-coin{font-size:14px;font-weight:600;color:var(--text)}
+  .mob-col-price{font-size:14px;font-weight:600;color:var(--text)}
+  .mob-col-chg{font-size:11px;font-weight:600}
+
   /* Chart yüksekliği */
-  .chart-wrap{flex:1;min-height:160px}
+  .chart-wrap{flex:1;min-height:110px;max-height:50svh}
 
   /* Bottom panel kart için biraz yüksek */
   .bottom-panel{height:210px}
@@ -455,9 +467,9 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 .legal-modal-bg.open{display:flex}
 .legal-modal-box{background:#1a1e26;border:1px solid var(--border2);border-radius:8px;width:100%;max-width:680px;max-height:85vh;display:flex;flex-direction:column}
 .legal-modal-head{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.legal-modal-head h2{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text)}
+.legal-modal-head h2{font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--text)}
 .legal-modal-body{padding:20px 24px;overflow-y:auto;font-size:12px;color:var(--muted2);line-height:1.8}
-.legal-modal-body h3{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text);margin:16px 0 6px}
+.legal-modal-body h3{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);margin:16px 0 6px}
 .legal-modal-body p{margin-bottom:10px}
 .legal-modal-body ul{margin:6px 0 10px 18px}
 .legal-modal-body li{margin-bottom:4px}
@@ -467,7 +479,7 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 .info-menu-card:hover{border-color:var(--yellow);background:rgba(240,185,11,.04)}
 .info-menu-icon{font-size:22px;flex-shrink:0;width:36px;text-align:center}
 .info-menu-text{flex:1;min-width:0}
-.info-menu-title{font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.info-menu-title{font-family:var(--font-mono);font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
 .info-menu-desc{font-size:11px;color:var(--muted2);line-height:1.4}
 .info-menu-arrow{color:var(--yellow);font-size:20px;font-weight:700;flex-shrink:0}
 .info-menu-disclaimer{margin-top:16px;padding:12px 14px;background:rgba(255,154,0,.06);border:1px solid rgba(255,154,0,.2);border-radius:6px;font-size:11px;color:var(--muted2);line-height:1.6}
@@ -609,6 +621,13 @@ html, body {
 
   <!-- ORDER BOOK -->
   <div class="book-col">
+    <div class="mob-col-ticker" id="book-coin-ticker">
+      <div class="mob-col-ticker-left">
+        <span class="mob-col-coin" id="book-col-coin">BTCUSDT</span>
+        <span class="mob-col-price" id="book-col-price">—</span>
+      </div>
+      <span class="mob-col-chg" id="book-col-chg">—</span>
+    </div>
     <div class="col-title">Emir Defteri</div>
     <div class="book-hdr">
       <span>Fiyat (USDT)</span><span style="text-align:right">Miktar</span><span style="text-align:right">Toplam</span>
@@ -622,6 +641,13 @@ html, body {
 
   <!-- TRADE PANEL -->
   <div class="trade-col">
+    <div class="mob-col-ticker" id="trade-coin-ticker">
+      <div class="mob-col-ticker-left">
+        <span class="mob-col-coin" id="trade-col-coin">BTCUSDT</span>
+        <span class="mob-col-price" id="trade-col-price">—</span>
+      </div>
+      <span class="mob-col-chg" id="trade-col-chg">—</span>
+    </div>
     <div class="mode-row">
       <button class="mode-btn" id="margin-btn" onclick="toggleMargin()">İzole</button>
       <button class="lev-btn" id="lev-btn" onclick="openLevModal()">20x</button>
@@ -995,7 +1021,7 @@ function loadState() {
     const s = JSON.parse(raw);
     if (typeof s.walletBalance === 'number' && s.walletBalance > 0) walletBalance = s.walletBalance;
     if (Array.isArray(s.positions)) positions = s.positions.map(p => ({
-      totalFundingPaid: 0, lastFundingApplied: 0, ...p
+      totalFundingPaid: 0, lastFundingApplied: 0, openedAt: p.id, ...p
     }));
     if (Array.isArray(s.pendingOrders)) pendingOrders = s.pendingOrders;
     if (typeof s.leverage === 'number') leverage = s.leverage;
@@ -1160,6 +1186,13 @@ function updateTicker(d) {
     mobChg.textContent = chgEl.textContent;
     mobChg.style.color = chgEl.style.color;
   }
+  // Emir defteri ve işlem paneli mobil coin ticker güncelle
+  ['book', 'trade'].forEach(prefix => {
+    const priceEl = document.getElementById(`${prefix}-col-price`);
+    const chgColEl = document.getElementById(`${prefix}-col-chg`);
+    if (priceEl) { priceEl.textContent = fmt(livePrice, coinDecimals[coin]); priceEl.style.color = lastPriceDirection > 0 ? 'var(--green)' : 'var(--red)'; }
+    if (chgColEl) { chgColEl.textContent = chgEl.textContent; chgColEl.style.color = chgEl.style.color; }
+  });
   document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT ✎';
   if (orderType === 'Market') document.getElementById('price-inp').value = livePrice.toFixed(coinDecimals[coin]);
   const maxSize = (walletBalance / (livePrice * (1 / leverage + COMMISSION_RATE))).toFixed(coinDecimals[coin] + 2);
@@ -1264,6 +1297,15 @@ function changeCoin(c) {
   document.getElementById('active-sym').textContent = c;
   document.getElementById('coin-unit').textContent = c;
   document.getElementById('live-price').textContent = '—';
+  // Mobil kolon coin ticker güncelle
+  ['book', 'trade'].forEach(prefix => {
+    const coinEl = document.getElementById(`${prefix}-col-coin`);
+    if (coinEl) coinEl.textContent = `${c}USDT`;
+    const priceEl = document.getElementById(`${prefix}-col-price`);
+    if (priceEl) { priceEl.textContent = '—'; priceEl.style.color = 'var(--text)'; }
+    const chgEl = document.getElementById(`${prefix}-col-chg`);
+    if (chgEl) { chgEl.textContent = '—'; chgEl.style.color = 'var(--muted)'; }
+  });
   document.getElementById('price-inp').value = '';
   document.getElementById('size-inp').value = '';
   document.querySelector('.market-dropdown').classList.remove('open');
@@ -1371,6 +1413,13 @@ function placeTrade(side) {
   if (!livePrice || livePrice <= 0) { toast('Fiyat bekleniyor...', 'warn'); return; }
 
   if (orderType === 'Market') {
+    if (reduceOnly) {
+      const closingSide = side === 'Long' ? 'Short' : 'Long';
+      const targetPos = positions.find(p => p.symbol === coin && p.side === closingSide);
+      if (!targetPos) { toast(`Yalnızca Azalt: Kapatılacak ${closingSide} pozisyon yok`, 'error'); return; }
+      const clampedSize = Math.min(size, targetPos.size);
+      closePos(targetPos.id, clampedSize);
+    } else {
     if (sliderPct === 100 && marginMode !== 'Çapraz') {
       const usedPrice = livePrice;
       const cost = (usedPrice * size) / leverage;
@@ -1382,6 +1431,7 @@ function placeTrade(side) {
       }
     }
     openPosition(side, livePrice, size);
+    }
   } else if (orderType === 'Limit') {
     if (!priceInput || priceInput <= 0) { toast('Fiyat girin', 'error'); return; }
     if (reduceOnly) {
@@ -1482,6 +1532,54 @@ function openPosition(side, entry, size, symOverride, levOverride, modeOverride,
   const sym = symOverride || coin;
   const lev = levOverride || leverage;
   const mode = modeOverride || marginMode;
+
+  // ── HEDGE KORUMASI: Karşı yönde açık pozisyon varsa önce onu küçült / kapat ──
+  const oppSide = side === 'Long' ? 'Short' : 'Long';
+  const oppPos = positions.find(p => p.symbol === sym && p.side === oppSide);
+  if (oppPos && marginOverride === undefined) {
+    if (size <= oppPos.size) {
+      // Gelen emir karşı pozisyonu küçültüyor veya tam kapatıyor
+      const commission = entry * size * COMMISSION_RATE;
+      walletBalance -= commission;
+      if (size < oppPos.size) {
+        // Kısmi kapanış
+        const ratio = size / oppPos.size;
+        const partialPnl = oppPos.pnl * ratio;
+        const partialMargin = oppPos.margin * ratio;
+        const realizedPnl = partialPnl - commission;
+        walletBalance += partialMargin + realizedPnl;
+        oppPos.size = parseFloat((oppPos.size - size).toFixed(8));
+        oppPos.margin -= partialMargin;
+        renderPositions();
+        saveState();
+        toast(`${oppSide} küçültüldü: ${realizedPnl >= 0 ? '+' : ''}${fmt(realizedPnl, 2)} USDT · Komisyon: ${fmt(commission, 2)} USDT`, realizedPnl >= 0 ? 'success' : 'error');
+      } else {
+        // Tam kapanış
+        const realizedPnl = oppPos.pnl - commission;
+        walletBalance += oppPos.margin + realizedPnl;
+        positions = positions.filter(p => p.id !== oppPos.id);
+        cleanBgWS();
+        renderPositions();
+        saveState();
+        toast(`${oppSide} kapatıldı: ${realizedPnl >= 0 ? '+' : ''}${fmt(realizedPnl, 2)} USDT · Komisyon: ${fmt(commission, 2)} USDT`, realizedPnl >= 0 ? 'success' : 'error');
+      }
+      return;
+    } else {
+      // Gelen emir karşı pozisyondan büyük → önce onu kapat, kalanla yeni pozisyon aç
+      const remaining = size - oppPos.size;
+      const commission = entry * oppPos.size * COMMISSION_RATE;
+      walletBalance -= commission;
+      const realizedPnl = oppPos.pnl - commission;
+      walletBalance += oppPos.margin + realizedPnl;
+      positions = positions.filter(p => p.id !== oppPos.id);
+      cleanBgWS();
+      toast(`${oppSide} kapatıldı: ${realizedPnl >= 0 ? '+' : ''}${fmt(realizedPnl, 2)} USDT · Komisyon: ${fmt(commission, 2)} USDT`, realizedPnl >= 0 ? 'success' : 'error');
+      // Kalan miktarla yeni pozisyon aç (rekürsif)
+      openPosition(side, entry, remaining, symOverride, levOverride, modeOverride, marginOverride);
+      return;
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────────
   const cost = marginOverride !== undefined ? marginOverride : (entry * size) / lev;
   const commission = entry * size * COMMISSION_RATE;
   const totalRequired = cost + commission;
@@ -1527,7 +1625,7 @@ function openPosition(side, entry, size, symOverride, levOverride, modeOverride,
     return;
   }
 
-  positions.push({ id: Date.now(), symbol: sym, side, entry, size, lev, mode, margin: cost, pnl: 0, liq: liqPrice, totalFundingPaid: 0, lastFundingApplied: 0 });
+  positions.push({ id: Date.now(), symbol: sym, side, entry, size, lev, mode, margin: cost, pnl: 0, liq: liqPrice, totalFundingPaid: 0, lastFundingApplied: 0, openedAt: Date.now() });
   ensureBgWS(sym);
   renderPositions();
   saveState();
@@ -1910,11 +2008,8 @@ function setOrderType(type, btn) {
   if (type === 'Market') {
     pg.style.opacity = '.35'; pg.style.pointerEvents = 'none';
     sg.style.display = 'none';
-    document.getElementById('reduce-only-wrap').style.display = 'none';
+    document.getElementById('reduce-only-wrap').style.display = 'flex';
     document.getElementById('price-inp').value = livePrice ? livePrice.toFixed(coinDecimals[coin]) : '';
-    reduceOnly = false;
-    document.querySelector('.buy-btn').textContent = 'AL/UZUN';
-    document.querySelector('.sell-btn').textContent = 'SAT/KISA';
   } else if (type === 'StopLimit') {
     pg.style.opacity = '1'; pg.style.pointerEvents = '';
     sg.style.display = 'flex';
@@ -2064,6 +2159,7 @@ async function fetchFundingRate(symbol) {
 }
 
 // Fonlama ödemelerini uygula: nextFundingTime geçince her pozisyona tahsil et
+// ── FUNDING: Canlı uygulama ────────────────────────────────────────────────────
 function applyFundingPayments() {
   const now = Date.now();
   let anyChanged = false;
@@ -2072,92 +2168,19 @@ function applyFundingPayments() {
     const cache = fundingRateCache[p.symbol];
     if (!cache || !cache.nextTime || cache.nextTime <= 0) return;
     const lastApplied = p.lastFundingApplied || 0;
-    // Bu funding period daha önce bu pozisyona uygulanmadıysa ve süre geçtiyse
     if (cache.nextTime <= now && lastApplied < cache.nextTime) {
       const posPrice = livePrices[p.symbol] || p.entry;
-      const notional = posPrice * p.size;
-      // Long: rate > 0 → öder (negatif); Short: rate > 0 → alır (pozitif)
-      const fee = notional * cache.rate * (p.side === 'Long' ? 1 : -1);
+      const fee = posPrice * p.size * cache.rate * (p.side === 'Long' ? 1 : -1);
       walletBalance -= fee;
       p.totalFundingPaid = (p.totalFundingPaid || 0) + fee;
       p.lastFundingApplied = cache.nextTime;
       anyChanged = true;
-      const feeAbs = Math.abs(fee);
-      const isPaying = fee > 0;
       toast(
-        `${p.symbol} ${p.side} fonlama: ${isPaying ? '-' : '+'}${fmt(feeAbs, 4)} USDT` +
-        ` (${(cache.rate * 100).toFixed(4)}%)`,
-        isPaying ? 'warn' : 'success'
+        `${p.symbol} ${p.side} fonlama: ${fee > 0 ? '-' : '+'}${fmt(Math.abs(fee), 4)} USDT (${(cache.rate * 100).toFixed(4)}%)`,
+        fee > 0 ? 'warn' : 'success'
       );
-      // Yeni funding zamanını çek
       fetchFundingRate(p.symbol);
     }
-  });
-
-  if (anyChanged) {
-    renderPositions();
-    saveState();
-    document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT ✎';
-  }
-}
-
-// Çevrimdışıyken geçen fonlama periyotlarını telafi et
-// Bybit perpetuals: her 8 saatte bir — 00:00, 08:00, 16:00 UTC
-async function applyOfflineFunding() {
-  if (positions.length === 0) return;
-  const now = Date.now();
-  const INTERVAL = 8 * 60 * 60 * 1000; // 8 saat ms
-
-  // Önce açık pozisyon coinlerinin güncel funding rate'ini çek
-  const uniqueCoins = [...new Set(positions.map(p => p.symbol))];
-  await Promise.all(uniqueCoins.map(sym => fetchFundingRate(sym)));
-
-  let totalOfflineFee = 0;
-  let anyChanged = false;
-
-  positions.forEach(p => {
-    const cache = fundingRateCache[p.symbol];
-    if (!cache || !cache.rate) return;
-    const lastApplied = p.lastFundingApplied || 0;
-    if (lastApplied <= 0) return; // Hiç uygulanmamışsa atla (pozisyon yeniyse)
-
-    // lastApplied'dan sonraki 8'er saatlik periyotları say
-    // Bybit'in nextFundingTime'ından geriye hesapla
-    const nextTime = cache.nextTime || 0;
-    if (nextTime <= 0) return;
-
-    // Son bilinen nextFundingTime'dan geriye giderek geçmiş periyotları bul
-    // nextFundingTime her 8 saatte bir ilerler
-    let periodTime = nextTime - INTERVAL; // Bir önceki periyot
-    let missedCount = 0;
-    const missedPeriods = [];
-
-    // lastApplied'dan şimdiye kadar geçen tüm 8h periyotları topla
-    while (periodTime > lastApplied && periodTime <= now) {
-      missedPeriods.push(periodTime);
-      periodTime -= INTERVAL;
-    }
-
-    if (missedPeriods.length === 0) return;
-
-    const posPrice = livePrices[p.symbol] || p.entry;
-    const notional = posPrice * p.size;
-    const feePerPeriod = notional * cache.rate * (p.side === 'Long' ? 1 : -1);
-    const totalFee = feePerPeriod * missedPeriods.length;
-
-    walletBalance -= totalFee;
-    p.totalFundingPaid = (p.totalFundingPaid || 0) + totalFee;
-    p.lastFundingApplied = missedPeriods[0]; // En son periyot
-    totalOfflineFee += totalFee;
-    missedCount = missedPeriods.length;
-    anyChanged = true;
-
-    const feeAbs = Math.abs(totalFee);
-    const isPaying = totalFee > 0;
-    toast(
-      `${p.symbol} çevrimdışı fonlama (${missedCount}×): ${isPaying ? '-' : '+'}${fmt(feeAbs, 4)} USDT`,
-      isPaying ? 'warn' : 'success'
-    );
   });
 
   if (anyChanged) {
@@ -2166,6 +2189,79 @@ async function applyOfflineFunding() {
     const avbl = document.getElementById('avbl');
     if (avbl) avbl.textContent = fmt(walletBalance, 2) + ' USDT ✎';
   }
+}
+
+// ── FUNDING: Çevrimdışı telafi (Bybit historical API) ─────────────────────────
+async function applyOfflineFunding() {
+  if (positions.length === 0) return;
+  const now = Date.now();
+
+  // Her unique coin için işle
+  const uniqueCoins = [...new Set(positions.map(p => p.symbol))];
+
+  for (const sym of uniqueCoins) {
+    const symPositions = positions.filter(p => p.symbol === sym);
+
+    // Bu coindeki en eski lastFundingApplied (veya openedAt) — buradan itibaren history çek
+    const earliest = Math.min(...symPositions.map(p =>
+      p.lastFundingApplied > 0 ? p.lastFundingApplied : (p.openedAt || now)
+    ));
+
+    if (earliest >= now) continue;
+
+    // Bybit funding history API: startTime → endTime arası tüm periyotları döner
+    let history = [];
+    try {
+      const url = `https://api.bybit.com/v5/market/funding/history?category=linear&symbol=${sym}USDT&startTime=${earliest}&endTime=${now}&limit=200`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.result && Array.isArray(data.result.list)) {
+          history = data.result.list; // [{fundingRate, fundingRateTimestamp}, ...]
+        }
+      }
+    } catch { continue; }
+
+    if (history.length === 0) continue;
+
+    symPositions.forEach(p => {
+      const lastApplied = p.lastFundingApplied || 0;
+      const openedAt = p.openedAt || p.id; // id = Date.now() — açılış zamanı
+
+      // Bu pozisyona henüz uygulanmamış periyotları filtrele
+      const missed = history.filter(h => {
+        const ts = parseInt(h.fundingRateTimestamp);
+        return ts > lastApplied && ts > openedAt && ts <= now;
+      });
+
+      if (missed.length === 0) return;
+
+      const posPrice = livePrices[sym] || p.entry;
+      let totalFee = 0;
+
+      missed.forEach(h => {
+        const rate = parseFloat(h.fundingRate);
+        const fee = posPrice * p.size * rate * (p.side === 'Long' ? 1 : -1);
+        totalFee += fee;
+      });
+
+      walletBalance -= totalFee;
+      p.totalFundingPaid = (p.totalFundingPaid || 0) + totalFee;
+      p.lastFundingApplied = parseInt(missed[0].fundingRateTimestamp); // en yeni
+
+      const feeAbs = Math.abs(totalFee);
+      const isPaying = totalFee > 0;
+      toast(
+        `${sym} çevrimdışı fonlama (${missed.length}×): ${isPaying ? '-' : '+'}${fmt(feeAbs, 4)} USDT`,
+        isPaying ? 'warn' : 'success'
+      );
+    });
+  }
+
+  renderPositions();
+  saveState();
+  const avbl = document.getElementById('avbl');
+  if (avbl) avbl.textContent = fmt(walletBalance, 2) + ' USDT ✎';
 }
 
 function startFunding() {
