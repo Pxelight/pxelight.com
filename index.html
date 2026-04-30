@@ -19,47 +19,52 @@
 <!-- PWA MANIFEST (inline) -->
 <script>
 (function(){
-  // 1. SVG Kodunu temiz formatta (gerçek # işareti ile) yazıyoruz
   const rawSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='#0d0f12'/><g transform='translate(256,256)'><polygon points='0,-110 95,-55 95,55 0,110 -95,55 -95,-55' fill='none' stroke='#f0b90b' stroke-width='22'/><polygon points='0,-62 54,-31 54,31 0,62 -54,31 -54,-31' fill='#f0b90b' opacity='.25'/><line x1='0' y1='-110' x2='0' y2='-62' stroke='#f0b90b' stroke-width='14'/><line x1='0' y1='62' x2='0' y2='110' stroke='#f0b90b' stroke-width='14'/><line x1='95' y1='-55' x2='54' y2='-31' stroke='#f0b90b' stroke-width='14'/><line x1='-54' y1='-31' x2='-95' y2='-55' stroke='#f0b90b' stroke-width='14'/><line x1='95' y1='55' x2='54' y2='31' stroke='#f0b90b' stroke-width='14'/><line x1='-54' y1='31' x2='-95' y2='55' stroke='#f0b90b' stroke-width='14'/></g></svg>`;
 
-  // 2. Android ve Web App Manifest için encode edilmiş SVG Data URL
   const svgUrl = "data:image/svg+xml," + encodeURIComponent(rawSvg);
 
-  const manifest = {
-    name: "Pxelight Futures",
-    short_name: "Pxelight",
-    display: "standalone",
-    background_color: "#0d0f12",
-    theme_color: "#0d0f12",
-    start_url: ".",
-    icons: [
-      { src: svgUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
-    ]
-  };
-  
-  const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
-  const manifestUrl = URL.createObjectURL(blob);
-  const link = document.createElement('link');
-  link.rel = 'manifest';
-  link.href = manifestUrl;
-  document.head.appendChild(link);
+  // SVG → PNG (canvas) — iOS ve Android manifest için
+  function svgToPng(size, callback) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      canvas.getContext('2d').drawImage(img, 0, 0, size, size);
+      callback(canvas.toDataURL('image/png'));
+    };
+    img.src = svgUrl;
+  }
 
-  // 3. iOS (Apple) Cihazlar için SVG'yi anlık (dinamik) olarak PNG'ye çevirme
-  // Apple cihazlar ana ekranda SVG desteklemez, bu kod SVG'yi Canvas'ta çizip PNG yapar.
-  const img = new Image();
-  img.onload = () => {
-     const canvas = document.createElement('canvas');
-     canvas.width = 512;
-     canvas.height = 512;
-     canvas.getContext('2d').drawImage(img, 0, 0);
-     const pngUrl = canvas.toDataURL('image/png');
-     
-     let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
-     if(appleIcon) {
-         appleIcon.href = pngUrl;
-     }
-  };
-  img.src = svgUrl;
+  // apple-touch-icon güncelle
+  svgToPng(512, function(png512) {
+    // apple-touch-icon
+    let appleIcon = document.querySelector('link[rel="apple-touch-icon"]');
+    if (appleIcon) appleIcon.href = png512;
+
+    // Manifest: PNG ikonları ile, data URL olarak göm
+    svgToPng(192, function(png192) {
+      const manifest = {
+        name: "Pxelight Futures",
+        short_name: "Pxelight",
+        description: "Kripto Futures Simülatörü",
+        display: "standalone",
+        orientation: "portrait",
+        background_color: "#0d0f12",
+        theme_color: "#0d0f12",
+        start_url: "./",
+        scope: "./",
+        icons: [
+          { src: png192, sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: png512, sizes: "512x512", type: "image/png", purpose: "any maskable" }
+        ]
+      };
+      // data: URL olarak ekle — blob: URL'nin aksine Chrome güvenilir sayar
+      const manifestData = "data:application/manifest+json," + encodeURIComponent(JSON.stringify(manifest));
+      let link = document.querySelector('link[rel="manifest"]');
+      if (!link) { link = document.createElement('link'); link.rel = 'manifest'; document.head.appendChild(link); }
+      link.href = manifestData;
+    });
+  });
 })();
 </script>
 
@@ -221,7 +226,7 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 .pos-mob-sym .side-bar{height:18px}
 .pos-mob-pnl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .pos-mob-pnl{display:flex;align-items:baseline;gap:5px}
-.pos-mob-pnl-val{font-family:var(--font-display);font-size:15px;font-weight:700}
+.pos-mob-pnl-val{font-size:15px;font-weight:700}
 .pos-mob-roi{font-size:12px;font-weight:600}
 .pos-mob-liq{text-align:right}
 .pos-mob-liq .pos-mob-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:1px}
@@ -956,6 +961,12 @@ let livePrices = {};
 let sliderPct = 0;
 let lastPriceDirection = 1;
 let reduceOnly = false;
+
+// ── FUNDING STATE ─────────────────────────────────────────────────────────────
+let currentFundingRate = null;
+let fundingNextTime = null;
+// Per-coin fonlama oranı cache: { 'BTC': { rate: 0.0001, nextTime: 1234567890000 }, ... }
+let fundingRateCache = {};
 
 // ── KALICI DURUM (localStorage) ───────────────────────────────────────────────
 const STORAGE_KEY = 'pxelight_state_v1';
@@ -2023,10 +2034,6 @@ function toast(msg, type = 'success') {
 }
 
 // ── FUNDING COUNTDOWN ──────────────────────────────────────────────────────────
-let currentFundingRate = null;
-let fundingNextTime = null;
-// Per-coin fonlama oranı cache: { 'BTC': { rate: 0.0001, nextTime: 1234567890000 }, ... }
-let fundingRateCache = {};
 
 async function fetchFundingRate(symbol) {
   try {
@@ -2091,6 +2098,73 @@ function applyFundingPayments() {
     renderPositions();
     saveState();
     document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT ✎';
+  }
+}
+
+// Çevrimdışıyken geçen fonlama periyotlarını telafi et
+// Bybit perpetuals: her 8 saatte bir — 00:00, 08:00, 16:00 UTC
+async function applyOfflineFunding() {
+  if (positions.length === 0) return;
+  const now = Date.now();
+  const INTERVAL = 8 * 60 * 60 * 1000; // 8 saat ms
+
+  // Önce açık pozisyon coinlerinin güncel funding rate'ini çek
+  const uniqueCoins = [...new Set(positions.map(p => p.symbol))];
+  await Promise.all(uniqueCoins.map(sym => fetchFundingRate(sym)));
+
+  let totalOfflineFee = 0;
+  let anyChanged = false;
+
+  positions.forEach(p => {
+    const cache = fundingRateCache[p.symbol];
+    if (!cache || !cache.rate) return;
+    const lastApplied = p.lastFundingApplied || 0;
+    if (lastApplied <= 0) return; // Hiç uygulanmamışsa atla (pozisyon yeniyse)
+
+    // lastApplied'dan sonraki 8'er saatlik periyotları say
+    // Bybit'in nextFundingTime'ından geriye hesapla
+    const nextTime = cache.nextTime || 0;
+    if (nextTime <= 0) return;
+
+    // Son bilinen nextFundingTime'dan geriye giderek geçmiş periyotları bul
+    // nextFundingTime her 8 saatte bir ilerler
+    let periodTime = nextTime - INTERVAL; // Bir önceki periyot
+    let missedCount = 0;
+    const missedPeriods = [];
+
+    // lastApplied'dan şimdiye kadar geçen tüm 8h periyotları topla
+    while (periodTime > lastApplied && periodTime <= now) {
+      missedPeriods.push(periodTime);
+      periodTime -= INTERVAL;
+    }
+
+    if (missedPeriods.length === 0) return;
+
+    const posPrice = livePrices[p.symbol] || p.entry;
+    const notional = posPrice * p.size;
+    const feePerPeriod = notional * cache.rate * (p.side === 'Long' ? 1 : -1);
+    const totalFee = feePerPeriod * missedPeriods.length;
+
+    walletBalance -= totalFee;
+    p.totalFundingPaid = (p.totalFundingPaid || 0) + totalFee;
+    p.lastFundingApplied = missedPeriods[0]; // En son periyot
+    totalOfflineFee += totalFee;
+    missedCount = missedPeriods.length;
+    anyChanged = true;
+
+    const feeAbs = Math.abs(totalFee);
+    const isPaying = totalFee > 0;
+    toast(
+      `${p.symbol} çevrimdışı fonlama (${missedCount}×): ${isPaying ? '-' : '+'}${fmt(feeAbs, 4)} USDT`,
+      isPaying ? 'warn' : 'success'
+    );
+  });
+
+  if (anyChanged) {
+    renderPositions();
+    saveState();
+    const avbl = document.getElementById('avbl');
+    if (avbl) avbl.textContent = fmt(walletBalance, 2) + ' USDT ✎';
   }
 }
 
@@ -2192,6 +2266,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderMarkets();
   startFunding();
+  applyOfflineFunding(); // Sayfa kapalıyken geçen periyotları telafi et
   renderPositions();
   renderPendingOrders();
   // Kaydedilmiş durumu UI'a yansıt
