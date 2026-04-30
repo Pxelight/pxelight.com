@@ -208,6 +208,30 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 .tag{background:rgba(255,255,255,.07);color:var(--muted2);padding:1px 4px;border-radius:2px;font-size:9px;font-weight:600}
 .liq-col{color:var(--orange);font-weight:600}
 .pnl-cell{font-weight:600}
+.funding-cell{font-weight:600;font-size:11px}
+
+/* Pozisyon mobil kartlar — varsayılan gizli */
+.pos-mob-row{display:none}
+.pos-desktop-row{display:table-row}
+
+/* Mobil kart stili */
+.pos-mob-card{padding:10px 12px;border-bottom:1px solid rgba(37,42,51,.5)}
+.pos-mob-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pos-mob-sym{display:flex;align-items:center;gap:6px}
+.pos-mob-sym .side-bar{height:18px}
+.pos-mob-pnl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pos-mob-pnl{display:flex;align-items:baseline;gap:5px}
+.pos-mob-pnl-val{font-family:var(--font-display);font-size:15px;font-weight:700}
+.pos-mob-roi{font-size:12px;font-weight:600}
+.pos-mob-liq{text-align:right}
+.pos-mob-liq .pos-mob-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:1px}
+.pos-mob-liq .pos-mob-stat-val{font-size:12px;font-weight:600}
+.pos-mob-liq .pos-mob-stat-val.liq-col{color:var(--orange)}
+.pos-mob-right{display:flex;gap:14px;align-items:flex-end}
+.pos-mob-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+.pos-mob-stat{background:var(--panel2);border-radius:4px;padding:5px 7px}
+.pos-mob-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:2px}
+.pos-mob-stat-val{font-size:11px;font-weight:600;color:var(--text)}
 .close-btn,.cancel-btn{background:var(--panel2);color:var(--text);border:1px solid var(--border2);padding:3px 9px;border-radius:3px;cursor:pointer;font-size:10px;font-family:var(--font-mono);transition:all .15s}
 .close-btn:hover{background:rgba(246,70,93,.15);border-color:var(--red);color:var(--red)}
 .cancel-btn{color:var(--red);border-color:rgba(246,70,93,.25)}
@@ -349,10 +373,10 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
   .mob-ticker-row .tstat .val{font-size:11px;font-weight:500}
 
   /* Chart yüksekliği */
-  .chart-wrap{flex:1;min-height:200px}
+  .chart-wrap{flex:1;min-height:160px}
 
-  /* Bottom panel daha küçük */
-  .bottom-panel{height:180px}
+  /* Bottom panel kart için biraz yüksek */
+  .bottom-panel{height:210px}
   .tab-btn{padding:8px 10px;font-size:10px}
 
   /* Order book */
@@ -376,9 +400,16 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
   /* Market dropdown mobilde tam genişlik */
   .market-dropdown{width:calc(100vw - 24px);left:0}
 
-  /* Tablo sütunlarını gizle */
-  table th:nth-child(3),table td:nth-child(3),
-  table th:nth-child(4),table td:nth-child(4){display:none}
+  /* Pozisyon tablosu → mobilde kart layout */
+  .pos-desktop-row{display:none!important}
+  .pos-mob-row{display:table-row!important}
+  /* Emir tablosunda 3. ve 4. sütunları gizle (pozisyon tablosuna dokunma) */
+  #tab-orders table th:nth-child(3),#tab-orders table td:nth-child(3),
+  #tab-orders table th:nth-child(4),#tab-orders table td:nth-child(4){display:none}
+  #tab-assets table th:nth-child(3),#tab-assets table td:nth-child(3),
+  #tab-assets table th:nth-child(4),#tab-assets table td:nth-child(4){display:none}
+  /* Pozisyon tablosu başlığını gizle (kartlar var) */
+  #tab-pos table thead{display:none}
 
   /* Toast alt nav üstünde */
   .toast{bottom:60px;right:12px;left:12px;max-width:none;text-align:center}
@@ -550,7 +581,7 @@ html, body {
       </div>
       <div class="tab-content active" id="tab-pos">
         <table>
-          <thead><tr><th>Sembol</th><th>Miktar</th><th>Giriş Fiyatı</th><th>Mark Fiyat</th><th>Liq. Fiyat</th><th>PNL (ROI%)</th><th>Kapat</th></tr></thead>
+          <thead><tr><th>Sembol</th><th>Miktar</th><th>Giriş Fiyatı</th><th>Mark Fiyat</th><th>Liq. Fiyat</th><th>PNL (ROI%)</th><th>Fonlama</th><th>Kapat</th></tr></thead>
           <tbody id="pos-body"></tbody>
         </table>
         <div class="empty-state" id="pos-empty"><div class="icon"></div>Açık pozisyon yok</div>
@@ -940,6 +971,7 @@ function saveState() {
       marginMode,
       marginMap,
       coin,
+      fundingRateCache,
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch(e) {}
@@ -951,13 +983,16 @@ function loadState() {
     if (!raw) return;
     const s = JSON.parse(raw);
     if (typeof s.walletBalance === 'number' && s.walletBalance > 0) walletBalance = s.walletBalance;
-    if (Array.isArray(s.positions)) positions = s.positions;
+    if (Array.isArray(s.positions)) positions = s.positions.map(p => ({
+      totalFundingPaid: 0, lastFundingApplied: 0, ...p
+    }));
     if (Array.isArray(s.pendingOrders)) pendingOrders = s.pendingOrders;
     if (typeof s.leverage === 'number') leverage = s.leverage;
     if (s.leverageMap && typeof s.leverageMap === 'object') leverageMap = s.leverageMap;
     if (typeof s.marginMode === 'string') marginMode = s.marginMode;
     if (s.marginMap && typeof s.marginMap === 'object') marginMap = s.marginMap;
     if (typeof s.coin === 'string' && COINS.includes(s.coin)) coin = s.coin;
+    if (s.fundingRateCache && typeof s.fundingRateCache === 'object') fundingRateCache = s.fundingRateCache;
   } catch(e) {}
 }
 
@@ -1230,6 +1265,11 @@ function changeCoin(c) {
   currentFundingRate = null;
   fundingNextTime = null;
   document.getElementById('funding-cd').textContent = '— / —';
+  // Cache'den hemen göster (varsa)
+  if (fundingRateCache[c]) {
+    currentFundingRate = fundingRateCache[c].rate;
+    fundingNextTime = fundingRateCache[c].nextTime;
+  }
   fetchFundingRate(c);
   // If old coin had open positions, start a bg WS for it now
   const posSymbols = new Set(positions.map(p => p.symbol));
@@ -1476,7 +1516,7 @@ function openPosition(side, entry, size, symOverride, levOverride, modeOverride,
     return;
   }
 
-  positions.push({ id: Date.now(), symbol: sym, side, entry, size, lev, mode, margin: cost, pnl: 0, liq: liqPrice });
+  positions.push({ id: Date.now(), symbol: sym, side, entry, size, lev, mode, margin: cost, pnl: 0, liq: liqPrice, totalFundingPaid: 0, lastFundingApplied: 0 });
   ensureBgWS(sym);
   renderPositions();
   saveState();
@@ -1628,19 +1668,76 @@ function renderPositions() {
   document.getElementById('pos-tab').textContent = `Pozisyonlar (${positions.length})`;
   if (positions.length === 0) { body.innerHTML = ''; empty.style.display = 'flex'; drawPositionLines(); return; }
   empty.style.display = 'none';
-  body.innerHTML = positions.map(p => `
-    <tr>
+  body.innerHTML = positions.map(p => {
+    const fundingPaid = p.totalFundingPaid || 0;
+    const fundingColor = fundingPaid > 0 ? 'var(--red)' : fundingPaid < 0 ? 'var(--green)' : 'var(--muted)';
+    const fundingSign = fundingPaid > 0 ? '-' : fundingPaid < 0 ? '+' : '';
+    const fundingDisplay = fundingPaid !== 0
+      ? `<span style="color:${fundingColor}">${fundingSign}${fmt(Math.abs(fundingPaid), 4)}</span><span style="color:var(--muted);font-size:10px"> USDT</span>`
+      : `<span style="color:var(--muted)">—</span>`;
+
+    const markPrice = livePrices[p.symbol] ? fmt(livePrices[p.symbol], coinDecimals[p.symbol] || 2) : '—';
+    const pnlColor = p.pnl >= 0 ? 'var(--green)' : 'var(--red)';
+    const roi = p.margin > 0 ? ((p.pnl / p.margin) * 100).toFixed(2) : '0.00';
+
+    // Mobil kart HTML (sadece mobilde görünür)
+    const mobCard = `<div class="pos-mob-card">
+      <div class="pos-mob-head">
+        <div class="pos-mob-sym">
+          <div class="side-bar ${p.side === 'Long' ? 'long' : 'short'}"></div>
+          <span class="sym-name">${p.symbol}USDT</span>
+          <span class="tag">${p.mode}</span>
+          <span class="tag">${p.lev}x</span>
+        </div>
+        <button class="close-btn" onclick="closePos(${p.id})">Kapat</button>
+      </div>
+      <div class="pos-mob-pnl-row">
+        <div class="pos-mob-pnl">
+          <span class="pos-mob-pnl-val" id="pnl-mob-${p.id}" style="color:${pnlColor}">${fmt(p.pnl,2)} USDT</span>
+          <span class="pos-mob-roi" id="roi-mob-${p.id}" style="color:${pnlColor}">(${roi}%)</span>
+        </div>
+        <div class="pos-mob-right">
+          <div class="pos-mob-liq">
+            <span class="pos-mob-stat-lbl">Miktar</span>
+            <span class="pos-mob-stat-val">${p.size} ${p.symbol}</span>
+          </div>
+          <div class="pos-mob-liq">
+            <span class="pos-mob-stat-lbl">Liq.</span>
+            <span class="pos-mob-stat-val liq-col">${fmt(p.liq, coinDecimals[p.symbol] || 2)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="pos-mob-stats">
+        <div class="pos-mob-stat">
+          <span class="pos-mob-stat-lbl">Giriş</span>
+          <span class="pos-mob-stat-val">${fmt(p.entry, coinDecimals[p.symbol] || 2)}</span>
+        </div>
+        <div class="pos-mob-stat">
+          <span class="pos-mob-stat-lbl">Mark</span>
+          <span class="pos-mob-stat-val" id="mark-mob-${p.id}">${markPrice}</span>
+        </div>
+        <div class="pos-mob-stat">
+          <span class="pos-mob-stat-lbl">Fonlama</span>
+          <span class="pos-mob-stat-val" id="fund-mob-${p.id}" style="color:${fundingPaid > 0 ? 'var(--red)' : fundingPaid < 0 ? 'var(--green)' : 'var(--muted)'}">${fundingPaid !== 0 ? fundingSign + fmt(Math.abs(fundingPaid), 4) + ' USDT' : '—'}</span>
+        </div>
+      </div>
+    </div>`;
+
+    return `
+    <tr class="pos-desktop-row">
       <td><div class="sym-cell"><div class="side-bar ${p.side==='Long'?'long':'short'}"></div>
         <div class="sym-info"><span class="sym-name">${p.symbol}USDT</span>
         <div class="sym-tags"><span class="tag">${p.mode}</span><span class="tag">${p.lev}x</span></div></div></div></td>
       <td>${p.size}</td>
       <td>${fmt(p.entry, coinDecimals[p.symbol] || 2)}</td>
-      <td>${livePrices[p.symbol] ? fmt(livePrices[p.symbol], coinDecimals[p.symbol] || 2) : '—'}</td>
+      <td id="mark-${p.id}">${markPrice}</td>
       <td class="liq-col">${fmt(p.liq, coinDecimals[p.symbol] || 2)}</td>
-      <td class="pnl-cell" id="pnl-${p.id}" style="color:${p.pnl>=0?'var(--green)':'var(--red)'}">
-        ${fmt(p.pnl,2)} USDT (${p.margin > 0 ? ((p.pnl/p.margin)*100).toFixed(2) : '0.00'}%)</td>
+      <td class="pnl-cell" id="pnl-${p.id}" style="color:${pnlColor}">${fmt(p.pnl,2)} USDT (${roi}%)</td>
+      <td class="funding-cell" id="fund-${p.id}">${fundingDisplay}</td>
       <td><button class="close-btn" onclick="closePos(${p.id})">Market</button></td>
-    </tr>`).join('');
+    </tr>
+    <tr class="pos-mob-row"><td colspan="8" style="padding:0;border:none">${mobCard}</td></tr>`;
+  }).join('');
   drawPositionLines();
 }
 
@@ -1689,11 +1786,55 @@ function updatePNL() {
     const diff = p.side === 'Long' ? (posPrice - p.entry) : (p.entry - posPrice);
     p.pnl = diff * p.size;
     totalUnrealized += p.pnl;
+    const roi = p.margin > 0 ? ((p.pnl / p.margin) * 100).toFixed(2) : '0.00';
+    const pnlColor = p.pnl >= 0 ? 'var(--green)' : 'var(--red)';
+
+    // Desktop PNL cell
     const cell = document.getElementById(`pnl-${p.id}`);
     if (cell) {
-      const roi = p.margin > 0 ? ((p.pnl / p.margin) * 100).toFixed(2) : '0.00';
-      cell.style.color = p.pnl >= 0 ? 'var(--green)' : 'var(--red)';
+      cell.style.color = pnlColor;
       cell.textContent = `${fmt(p.pnl, 2)} USDT (${roi}%)`;
+    }
+
+    // Desktop funding cell
+    const fundingPaid = p.totalFundingPaid || 0;
+    const fundCell = document.getElementById(`fund-${p.id}`);
+    if (fundCell) {
+      if (fundingPaid !== 0) {
+        const fColor = fundingPaid > 0 ? 'var(--red)' : 'var(--green)';
+        const fSign = fundingPaid > 0 ? '-' : '+';
+        fundCell.innerHTML = `<span style="color:${fColor}">${fSign}${fmt(Math.abs(fundingPaid), 4)}</span><span style="color:var(--muted);font-size:10px"> USDT</span>`;
+      } else {
+        fundCell.innerHTML = `<span style="color:var(--muted)">—</span>`;
+      }
+    }
+
+    // Mobil kart - PNL
+    const mobPnl = document.getElementById(`pnl-mob-${p.id}`);
+    if (mobPnl) { mobPnl.style.color = pnlColor; mobPnl.textContent = `${fmt(p.pnl, 2)} USDT`; }
+    const mobRoi = document.getElementById(`roi-mob-${p.id}`);
+    if (mobRoi) { mobRoi.style.color = pnlColor; mobRoi.textContent = `(${roi}%)`; }
+
+    // Mobil kart - Mark fiyat
+    const mobMark = document.getElementById(`mark-mob-${p.id}`);
+    if (mobMark) mobMark.textContent = fmt(posPrice, coinDecimals[p.symbol] || 2);
+
+    // Desktop - Mark fiyat
+    const deskMark = document.getElementById(`mark-${p.id}`);
+    if (deskMark) deskMark.textContent = fmt(posPrice, coinDecimals[p.symbol] || 2);
+
+    // Mobil kart - Fonlama
+    const mobFund = document.getElementById(`fund-mob-${p.id}`);
+    if (mobFund) {
+      if (fundingPaid !== 0) {
+        const fColor = fundingPaid > 0 ? 'var(--red)' : 'var(--green)';
+        const fSign = fundingPaid > 0 ? '-' : '+';
+        mobFund.style.color = fColor;
+        mobFund.textContent = `${fSign}${fmt(Math.abs(fundingPaid), 4)} USDT`;
+      } else {
+        mobFund.style.color = 'var(--muted)';
+        mobFund.textContent = '—';
+      }
     }
   });
   // assets tab
@@ -1884,58 +2025,122 @@ function toast(msg, type = 'success') {
 // ── FUNDING COUNTDOWN ──────────────────────────────────────────────────────────
 let currentFundingRate = null;
 let fundingNextTime = null;
+// Per-coin fonlama oranı cache: { 'BTC': { rate: 0.0001, nextTime: 1234567890000 }, ... }
+let fundingRateCache = {};
 
 async function fetchFundingRate(symbol) {
   try {
-    const res = await fetch(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${symbol.toUpperCase()}USDT`);
+    // Bybit linear perpetuals: sembol BTCUSDT formatında gönder
+    const sym = symbol.toUpperCase().endsWith('USDT') ? symbol.toUpperCase() : symbol.toUpperCase() + 'USDT';
+    const coinKey = sym.replace('USDT', '');
+    const res = await fetch(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${sym}`);
     if (!res.ok) return;
     const data = await res.json();
     const d = data.result && data.result.list && data.result.list[0];
     if (!d) return;
-    // Bybit: fundingRate ve nextFundingTime
     const rate = parseFloat(d.fundingRate);
     const nextTime = parseInt(d.nextFundingTime);
-    if (!isNaN(rate)) currentFundingRate = rate;
-    if (!isNaN(nextTime) && nextTime > 0) fundingNextTime = nextTime;
+    // Aktif coin değişkenlerini güncelle
+    if (coinKey === coin) {
+      if (!isNaN(rate)) currentFundingRate = rate;
+      if (!isNaN(nextTime) && nextTime > 0) fundingNextTime = nextTime;
+    }
+    // Cache'e tüm coinler için kaydet
+    fundingRateCache[coinKey] = {
+      rate: isNaN(rate) ? (fundingRateCache[coinKey]?.rate ?? 0) : rate,
+      nextTime: isNaN(nextTime) || nextTime <= 0 ? (fundingRateCache[coinKey]?.nextTime ?? 0) : nextTime,
+      fetchedAt: Date.now(),
+    };
   } catch {
     // sessiz hata, mevcut değer korunur
   }
 }
 
-function startFunding() {
-  fetchFundingRate(coin);
-  // Her coin değişiminde yeniden çek
-  setInterval(() => fetchFundingRate(coin), 30000); // 30 saniyede bir güncelle
+// Fonlama ödemelerini uygula: nextFundingTime geçince her pozisyona tahsil et
+function applyFundingPayments() {
+  const now = Date.now();
+  let anyChanged = false;
 
+  positions.forEach(p => {
+    const cache = fundingRateCache[p.symbol];
+    if (!cache || !cache.nextTime || cache.nextTime <= 0) return;
+    const lastApplied = p.lastFundingApplied || 0;
+    // Bu funding period daha önce bu pozisyona uygulanmadıysa ve süre geçtiyse
+    if (cache.nextTime <= now && lastApplied < cache.nextTime) {
+      const posPrice = livePrices[p.symbol] || p.entry;
+      const notional = posPrice * p.size;
+      // Long: rate > 0 → öder (negatif); Short: rate > 0 → alır (pozitif)
+      const fee = notional * cache.rate * (p.side === 'Long' ? 1 : -1);
+      walletBalance -= fee;
+      p.totalFundingPaid = (p.totalFundingPaid || 0) + fee;
+      p.lastFundingApplied = cache.nextTime;
+      anyChanged = true;
+      const feeAbs = Math.abs(fee);
+      const isPaying = fee > 0;
+      toast(
+        `${p.symbol} ${p.side} fonlama: ${isPaying ? '-' : '+'}${fmt(feeAbs, 4)} USDT` +
+        ` (${(cache.rate * 100).toFixed(4)}%)`,
+        isPaying ? 'warn' : 'success'
+      );
+      // Yeni funding zamanını çek
+      fetchFundingRate(p.symbol);
+    }
+  });
+
+  if (anyChanged) {
+    renderPositions();
+    saveState();
+    document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT ✎';
+  }
+}
+
+function startFunding() {
+  // Aktif coin + açık pozisyon coinleri için hemen çek
+  fetchFundingRate(coin);
+  const posCoinsFunding = new Set(positions.map(p => p.symbol));
+  posCoinsFunding.forEach(sym => { if (sym !== coin) fetchFundingRate(sym); });
+
+  // Her 30 saniyede bir güncelle
+  setInterval(() => {
+    fetchFundingRate(coin);
+    const posCoins = new Set(positions.map(p => p.symbol));
+    posCoins.forEach(sym => { if (sym !== coin) fetchFundingRate(sym); });
+  }, 30000);
+
+  // Her saniye geri sayım göster + funding uygula
   setInterval(() => {
     const now = Date.now();
-    const rate = currentFundingRate !== null
-      ? (currentFundingRate * 100).toFixed(4) + '%'
+    const cache = fundingRateCache[coin];
+    const rate = cache ? cache.rate : currentFundingRate;
+    const nextTime = cache ? cache.nextTime : fundingNextTime;
+    if (cache) { currentFundingRate = cache.rate; fundingNextTime = cache.nextTime; }
+
+    const rateStr = (rate !== null && rate !== undefined)
+      ? (rate * 100).toFixed(4) + '%'
       : '—';
 
     let countdown = '—';
-    if (fundingNextTime) {
-      const diff = fundingNextTime - now;
+    if (nextTime && nextTime > 0) {
+      const diff = nextTime - now;
       if (diff > 0) {
         const hh = Math.floor(diff / 3600000).toString().padStart(2, '0');
         const mm = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
         const ss = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
         countdown = `${hh}:${mm}:${ss}`;
       } else {
-        // Süre doldu, yeniden çek
         fetchFundingRate(coin);
       }
     }
 
     const el = document.getElementById('funding-cd');
-    el.textContent = `${rate} / ${countdown}`;
-
-    // Mobil geri sayım senkronize
+    if (el) el.textContent = `${rateStr} / ${countdown}`;
     const mobCd = document.getElementById('mob-countdown');
     if (mobCd) mobCd.textContent = countdown;
     const mobF = document.getElementById('mob-funding');
-    if (mobF) { mobF.textContent = rate; mobF.style.color = 'var(--yellow)'; }
+    if (mobF) { mobF.textContent = rateStr; mobF.style.color = 'var(--yellow)'; }
 
+    // Fonlama ödemelerini kontrol et ve uygula
+    applyFundingPayments();
   }, 1000);
 }
 
