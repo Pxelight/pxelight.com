@@ -484,6 +484,46 @@ td{padding:9px 10px;border-bottom:1px solid rgba(37,42,51,.5);vertical-align:mid
 .info-menu-arrow{color:var(--yellow);font-size:20px;font-weight:700;flex-shrink:0}
 .info-menu-disclaimer{margin-top:16px;padding:12px 14px;background:rgba(255,154,0,.06);border:1px solid rgba(255,154,0,.2);border-radius:6px;font-size:11px;color:var(--muted2);line-height:1.6}
 
+/* ── MOBİL İŞLEM GEÇMİŞİ KARTI ── */
+.hist-mob-card{padding:9px 12px;border-bottom:1px solid rgba(37,42,51,.5)}
+.hist-mob-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.hist-mob-sym{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600}
+.hist-mob-date{font-size:10px;color:var(--muted2)}
+.hist-mob-body{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.hist-mob-stat{background:var(--panel2);border-radius:4px;padding:4px 7px}
+.hist-mob-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:1px}
+.hist-mob-stat-val{font-size:11px;font-weight:600;color:var(--text)}
+.hist-mob-pnl{display:flex;align-items:center;justify-content:flex-end}
+.hist-mob-pnl-val{font-size:14px;font-weight:700}
+/* Masaüstünde hist-mob-card gizle, mobilde tablo satırlarını gizle */
+.hist-mob-row{display:none}
+.hist-desk-row{display:table-row}
+@media(max-width:768px){
+  .hist-desk-row{display:none}
+  .hist-mob-row{display:table-row}
+  #hist-thead{display:none}
+}
+
+/* ── TRADİNGVİEW TAM EKRAN BUTONU ── */
+.tv-fullscreen-btn{
+  display:none;
+  position:absolute;top:8px;right:8px;z-index:10;
+  width:28px;height:28px;border-radius:4px;
+  background:rgba(19,22,27,.85);border:1px solid var(--border2);
+  color:var(--muted2);cursor:pointer;
+  align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;padding:0;
+}
+.tv-fullscreen-btn:hover{border-color:var(--yellow);color:var(--yellow)}
+@media(min-width:769px){.tv-fullscreen-btn{display:flex}}
+
+/* Tam ekran durumu */
+.chart-wrap.tv-fs{
+  position:fixed!important;inset:0!important;z-index:9998!important;
+  width:100vw!important;height:100vh!important;
+}
+.chart-wrap.tv-fs .tv-fullscreen-btn{top:10px;right:10px}
+
 /* Genel Taşma Engelleme */
 html, body {
     overflow: hidden;
@@ -586,8 +626,14 @@ html, body {
       </div>
     </div>
 
-    <div class="chart-wrap">
+    <div class="chart-wrap" id="chart-wrap">
       <div id="tv-widget"></div>
+      <button class="tv-fullscreen-btn" id="tv-fs-btn" onclick="toggleTVFullscreen()" title="Tam Ekran">
+        <svg id="tv-fs-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+          <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+        </svg>
+      </button>
     </div>
 
     <div class="bottom-panel">
@@ -619,7 +665,7 @@ html, body {
       </div>
       <div class="tab-content" id="tab-history">
         <table>
-          <thead><tr><th>Sembol</th><th>Miktar</th><th>Giriş</th><th>Kapanış</th><th>Gerç. PNL</th><th>Tarih</th></tr></thead>
+          <thead id="hist-thead"><tr><th>Sembol</th><th>Miktar</th><th>Giriş</th><th>Kapanış</th><th>Gerç. PNL</th><th>Tarih</th></tr></thead>
           <tbody id="hist-body"></tbody>
         </table>
         <div class="empty-state" id="hist-empty"><div class="icon">
@@ -764,6 +810,10 @@ html, body {
       <span class="modal-close" onclick="closeBalModal()">×</span>
     </div>
     <div style="color:var(--muted2);font-size:11px;margin-bottom:8px">Mevcut bakiye: <span id="bal-current" style="color:var(--text);font-weight:600"></span> USDT</div>
+    <div style="display:flex;align-items:flex-start;gap:6px;background:rgba(246,70,93,.07);border:1px solid rgba(246,70,93,.2);border-radius:5px;padding:8px 10px;margin-bottom:12px;font-size:10px;color:var(--muted2);line-height:1.5">
+      <span style="color:var(--red);font-size:13px;flex-shrink:0;margin-top:-1px">⚠</span>
+      <span>Bakiyeyi değiştirdiğinizde <strong style="color:var(--text)">tüm açık pozisyonlar, emirler ve işlem geçmişi sıfırlanacaktır</strong>.</span>
+    </div>
     <div class="inp-group" style="margin-bottom:20px">
       <span class="lbl">Yeni Bakiye</span>
       <input type="number" id="bal-inp" placeholder="0.00" min="1" step="1">
@@ -1136,6 +1186,11 @@ function loadState() {
     if (typeof s.marginMode === 'string') marginMode = s.marginMode;
     if (s.marginMap && typeof s.marginMap === 'object') marginMap = s.marginMap;
     if (typeof s.coin === 'string' && COINS.includes(s.coin)) coin = s.coin;
+    // En son tıklanan coin (işlem açılmasından bağımsız) önceliklidir
+    try {
+      const lastClicked = localStorage.getItem('pxe_last_clicked_coin');
+      if (lastClicked && COINS.includes(lastClicked)) coin = lastClicked;
+    } catch(e) {}
     if (s.fundingRateCache && typeof s.fundingRateCache === 'object') fundingRateCache = s.fundingRateCache;
     if (Array.isArray(s.tradeHistory)) tradeHistory = s.tradeHistory;
   } catch(e) {}
@@ -1401,6 +1456,8 @@ async function renderMarkets() {
 function changeCoin(c) {
   const prevCoin = coin;
   coin = c;
+  // En son tıklanan coini localStorage'e kaydet
+  try { localStorage.setItem('pxe_last_clicked_coin', c); } catch(e) {}
   livePrice = 0;
   document.getElementById('active-sym').textContent = c;
   document.getElementById('coin-unit').textContent = c;
@@ -2318,11 +2375,21 @@ function confirmBal() {
   const v = parseFloat(document.getElementById('bal-inp').value);
   if (!v || v <= 0) { toast('Geçerli bir miktar girin', 'error'); return; }
   walletBalance = v;
+  positions = [];
+  pendingOrders = [];
   tradeHistory = [];
+  // Tüm arka plan WebSocket'lerini temizle
+  Object.values(bgWs).forEach(s => { try { s.close(); } catch(e){} });
+  bgWs = {};
+  if (ws) { try { ws.close(); } catch(e){} ws = null; }
+  renderPositions();
+  renderPendingOrders();
   renderTradeHistory();
   document.getElementById('avbl').textContent = fmt(walletBalance, 2) + ' USDT ✎';
   closeBalModal();
   saveState();
+  // WS yeniden bağlan
+  connectWS(coin);
   toast(`Bakiye ${fmt(v, 2)} USDT olarak ayarlandı`, 'success');
 }
 
@@ -2380,14 +2447,40 @@ function renderTradeHistory() {
     const sign = t.realizedPnl >= 0 ? '+' : '';
     const date = new Date(t.closedAt);
     const dateStr = date.toLocaleDateString('tr-TR', {day:'2-digit',month:'2-digit'}) + ' ' + date.toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'});
-    return '<tr>' +
-      '<td><span style="color:' + (t.side==='Long'?'var(--green)':'var(--red)') + ';font-weight:600">' + t.side.toUpperCase() + '</span> ' + t.symbol + 'USDT</td>' +
-      '<td>' + fmt(t.size, 4) + '</td>' +
-      '<td>' + fmt(t.entry, coinDecimals[t.symbol] || 2) + '</td>' +
-      '<td>' + fmt(t.closePrice, coinDecimals[t.symbol] || 2) + '</td>' +
-      '<td style="color:' + pnlColor + ';font-weight:600">' + sign + fmt(t.realizedPnl, 2) + ' USDT</td>' +
-      '<td style="color:var(--muted2)">' + dateStr + '</td>' +
-      '</tr>';
+    const sideColor = t.side === 'Long' ? 'var(--green)' : 'var(--red)';
+
+    // Mobil kart satırı
+    const mobRow = `<tr class="hist-mob-row"><td colspan="6" style="padding:0;border:none">
+      <div class="hist-mob-card">
+        <div class="hist-mob-head">
+          <div class="hist-mob-sym">
+            <span style="color:${sideColor}">${t.side.toUpperCase()}</span>
+            <span>${t.symbol}USDT</span>
+          </div>
+          <div class="hist-mob-pnl">
+            <span class="hist-mob-pnl-val" style="color:${pnlColor}">${sign}${fmt(t.realizedPnl, 2)} USDT</span>
+          </div>
+        </div>
+        <div class="hist-mob-body">
+          <div class="hist-mob-stat"><span class="hist-mob-stat-lbl">Miktar</span><span class="hist-mob-stat-val">${fmt(t.size, 4)}</span></div>
+          <div class="hist-mob-stat"><span class="hist-mob-stat-lbl">Tarih</span><span class="hist-mob-stat-val" style="font-size:10px">${dateStr}</span></div>
+          <div class="hist-mob-stat"><span class="hist-mob-stat-lbl">Giriş</span><span class="hist-mob-stat-val">${fmt(t.entry, coinDecimals[t.symbol] || 2)}</span></div>
+          <div class="hist-mob-stat"><span class="hist-mob-stat-lbl">Kapanış</span><span class="hist-mob-stat-val">${fmt(t.closePrice, coinDecimals[t.symbol] || 2)}</span></div>
+        </div>
+      </div>
+    </td></tr>`;
+
+    // Masaüstü satırı
+    const deskRow = `<tr class="hist-desk-row">
+      <td><span style="color:${sideColor};font-weight:600">${t.side.toUpperCase()}</span> ${t.symbol}USDT</td>
+      <td>${fmt(t.size, 4)}</td>
+      <td>${fmt(t.entry, coinDecimals[t.symbol] || 2)}</td>
+      <td>${fmt(t.closePrice, coinDecimals[t.symbol] || 2)}</td>
+      <td style="color:${pnlColor};font-weight:600">${sign}${fmt(t.realizedPnl, 2)} USDT</td>
+      <td style="color:var(--muted2)">${dateStr}</td>
+    </tr>`;
+
+    return deskRow + mobRow;
   }).join('');
 }
 
@@ -2600,6 +2693,33 @@ function refreshData() {
   if (btn) btn.classList.add('spinning');
   setTimeout(() => location.reload(), 300);
 }
+
+// ── TRADİNGVİEW TAM EKRAN ─────────────────────────────────────────────────────
+let tvFullscreen = false;
+function toggleTVFullscreen() {
+  const wrap = document.getElementById('chart-wrap');
+  const btn = document.getElementById('tv-fs-btn');
+  tvFullscreen = !tvFullscreen;
+  if (tvFullscreen) {
+    wrap.classList.add('tv-fs');
+    btn.title = 'Tam Ekrandan Çık';
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/>
+      <line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/>
+    </svg>`;
+  } else {
+    wrap.classList.remove('tv-fs');
+    btn.title = 'Tam Ekran';
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+      <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+    </svg>`;
+  }
+}
+// ESC tuşuyla tam ekrandan çık
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && tvFullscreen) toggleTVFullscreen();
+});
 
 // ── LEGAL MODALS ─────────────────────────────────────────────────────────────
 function openLegal(page) {
