@@ -1278,9 +1278,10 @@ function connectWS(symbol) {
     lastPriceDirection = livePrice >= prevPrice ? 1 : -1;
     updateTicker(d);
     renderOrderBook(livePrice);
-    checkPendingOrders();
     updatePNL();
     updateCostDisplay();
+    checkLiquidations();
+    checkPendingOrders();
   };
 }
 
@@ -1295,7 +1296,12 @@ function ensureBgWS(symbol) {
     const msg = JSON.parse(e.data);
     if (!msg.data) return;
     const price = parseFloat(msg.data.lastPrice);
-    if (price) { livePrices[symbol] = price; updatePNL(); }
+    if (price) {
+      livePrices[symbol] = price;
+      updatePNL();
+      checkLiquidations();
+      checkPendingOrders();
+    }
   };
   s.onclose = () => { delete bgWs[symbol]; };
   bgWs[symbol] = s;
@@ -1779,17 +1785,21 @@ function openPosition(side, entry, size, symOverride, levOverride, modeOverride,
   }
   walletBalance -= commission;
   let liqPrice;
+  const maintenanceRate = 0.005; // %0.5 bakım marjini
   if (mode === 'Çapraz') {
-    // Cross: tüm cüzdan tampon — liq fiyatı çok daha uzakta
-    const walletBeforeOpen = walletBalance + cost; // cost henüz düşüldü, geri ekle
+    // Cross: serbest bakiye + pozisyon marjini toplam tampon
+    const totalBuffer = walletBalance + cost; // cost henüz bakiyeden düşüldü, geri ekle
     liqPrice = side === 'Long'
-      ? Math.max(0, entry - (walletBeforeOpen / size) * 0.9)
-      : entry + (walletBeforeOpen / size) * 0.9;
+      ? Math.max(0, entry - (totalBuffer / size) * (1 - maintenanceRate))
+      : entry + (totalBuffer / size) * (1 - maintenanceRate);
   } else {
-    // Isolated: sadece marjin tampon
+    // Isolated: sadece pozisyona ayrılan marjin tampon
+    // Liq = entry - (margin / size) * (1 - maintenanceRate)   [Long]
+    // Liq = entry + (margin / size) * (1 - maintenanceRate)   [Short]
+    const marginPerUnit = cost / size;
     liqPrice = side === 'Long'
-      ? entry * (1 - 1 / lev * 0.9)
-      : entry * (1 + 1 / lev * 0.9);
+      ? Math.max(0, entry - marginPerUnit * (1 - maintenanceRate))
+      : entry + marginPerUnit * (1 - maintenanceRate);
   }
 
   // Merge with existing position on same symbol+side
@@ -1801,13 +1811,14 @@ function openPosition(side, entry, size, symOverride, levOverride, modeOverride,
     existing.margin += cost;
     if (existing.mode === 'Çapraz') {
       const wb = walletBalance + existing.margin;
-      existing.liq = side === 'Long'
-        ? Math.max(0, existing.entry - (wb / existing.size) * 0.9)
-        : existing.entry + (wb / existing.size) * 0.9;
+      existing.liq = existing.side === 'Long'
+        ? Math.max(0, existing.entry - (wb / existing.size) * (1 - maintenanceRate))
+        : existing.entry + (wb / existing.size) * (1 - maintenanceRate);
     } else {
-      existing.liq = side === 'Long'
-        ? existing.entry * (1 - 1 / existing.lev * 0.9)
-        : existing.entry * (1 + 1 / existing.lev * 0.9);
+      const mpu = existing.margin / existing.size;
+      existing.liq = existing.side === 'Long'
+        ? Math.max(0, existing.entry - mpu * (1 - maintenanceRate))
+        : existing.entry + mpu * (1 - maintenanceRate);
     }
     renderPositions();
     saveState();
@@ -2198,6 +2209,67 @@ function renderPendingOrders() {
   }).join('');
 }
 
+function checkLiquidations() {
+  if (!positions.length) return;
+
+  const maintenanceRate = 0.005;
+
+  // Cross modda likidasyon fiyatını her tick güncel tut
+  positions.forEach(p => {
+    if (p.mode === 'Çapraz') {
+      const totalBuffer = walletBalance + p.margin;
+      p.liq = p.side === 'Long'
+        ? Math.max(0, p.entry - (totalBuffer / p.size) * (1 - maintenanceRate))
+        : p.entry + (totalBuffer / p.size) * (1 - maintenanceRate);
+    }
+  });
+
+  const toLiquidate = [];
+  positions.forEach(p => {
+    const posPrice = livePrices[p.symbol] || 0;
+    if (!posPrice || !p.liq) return;
+    const hit = p.side === 'Long' ? posPrice <= p.liq : posPrice >= p.liq;
+    if (hit) toLiquidate.push(p.id);
+  });
+
+  if (!toLiquidate.length) return;
+
+  toLiquidate.forEach(id => {
+    const p = positions.find(x => x.id === id);
+    if (!p) return;
+    const liqPrice = livePrices[p.symbol] || p.liq;
+
+    // Marjin tamamen yok — cüzdana geri dönmez
+    pendingOrders = pendingOrders.filter(o => o.closingId !== id && o.tpslParent !== id);
+    positions = positions.filter(x => x.id !== id);
+
+    tradeHistory.unshift({
+      id: Date.now() + Math.random(),
+      symbol: p.symbol,
+      side: p.side,
+      size: p.size,
+      entry: p.entry,
+      closePrice: liqPrice,
+      realizedPnl: -p.margin,
+      commission: 0,
+      lev: p.lev,
+      mode: p.mode,
+      closedAt: Date.now(),
+      liquidated: true,
+    });
+    if (tradeHistory.length > 100) tradeHistory = tradeHistory.slice(0, 100);
+
+    toast(`⚡ LİKİDASYON: ${p.symbol} ${p.side} @ ${fmt(liqPrice, coinDecimals[p.symbol] || 2)} · −${fmt(p.margin, 2)} USDT`, 'error');
+  });
+
+  // Render'ları tek seferinde, tick döngüsünden sonra yap
+  cleanBgWS();
+  renderPositions();
+  renderPendingOrders();
+  renderTradeHistory();
+  saveState();
+}
+
 function updatePNL() {
   let totalUnrealized = 0;
   positions.forEach(p => {
@@ -2448,14 +2520,15 @@ function renderTradeHistory() {
     const date = new Date(t.closedAt);
     const dateStr = date.toLocaleDateString('tr-TR', {day:'2-digit',month:'2-digit'}) + ' ' + date.toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'});
     const sideColor = t.side === 'Long' ? 'var(--green)' : 'var(--red)';
+    const liqBadge = t.liquidated ? ` <span style="background:rgba(246,70,93,.15);color:var(--red);font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;letter-spacing:.3px">LİKİT</span>` : '';
 
     // Mobil kart satırı
     const mobRow = `<tr class="hist-mob-row"><td colspan="6" style="padding:0;border:none">
-      <div class="hist-mob-card">
+      <div class="hist-mob-card"${t.liquidated ? ' style="border-left:2px solid var(--red)"' : ''}>
         <div class="hist-mob-head">
           <div class="hist-mob-sym">
             <span style="color:${sideColor}">${t.side.toUpperCase()}</span>
-            <span>${t.symbol}USDT</span>
+            <span>${t.symbol}USDT</span>${liqBadge}
           </div>
           <div class="hist-mob-pnl">
             <span class="hist-mob-pnl-val" style="color:${pnlColor}">${sign}${fmt(t.realizedPnl, 2)} USDT</span>
@@ -2472,7 +2545,7 @@ function renderTradeHistory() {
 
     // Masaüstü satırı
     const deskRow = `<tr class="hist-desk-row">
-      <td><span style="color:${sideColor};font-weight:600">${t.side.toUpperCase()}</span> ${t.symbol}USDT</td>
+      <td><span style="color:${sideColor};font-weight:600">${t.side.toUpperCase()}</span> ${t.symbol}USDT${liqBadge}</td>
       <td>${fmt(t.size, 4)}</td>
       <td>${fmt(t.entry, coinDecimals[t.symbol] || 2)}</td>
       <td>${fmt(t.closePrice, coinDecimals[t.symbol] || 2)}</td>
