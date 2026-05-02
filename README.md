@@ -3,6 +3,6 @@ Cryptocurrencies Demo Futures Test Trading Website
 
 Ai is being used while making and updating this website.
 
-Latest Version: 1.4.0
+Latest Version: 1.5.0
 
 © 2026 Pxelight Futures, All Rights Reserved.
